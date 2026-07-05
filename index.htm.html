@@ -1,0 +1,2263 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>HIGHWAY-X | ระบบดูแลรักษาทางหลวงอัจฉริยะ</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%234C8DFF'/%3E%3Cstop offset='100%25' stop-color='%237C6FFF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='22' fill='url(%23g)'/%3E%3Ctext x='50' y='66' font-size='54' text-anchor='middle'%3E%F0%9F%93%A1%3C/text%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0%25' stop-color='%234C8DFF'/%3E%3Cstop offset='100%25' stop-color='%237C6FFF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='22' fill='url(%23g)'/%3E%3Ctext x='50' y='66' font-size='54' text-anchor='middle'%3E%F0%9F%93%A1%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#3d7fff">
+<style>
+  :root{
+    --bg:#f4f6fb; --card:#ffffff; --border:#e8ecf5;
+    --text:#161b26; --muted:#8892a3;
+    --blue:#3d7fff; --blue-dark:#1f5ee0; --blue-light:#eaf1ff;
+    --green:#22c55e; --green-bg:#e8faf0;
+    --amber:#f5a623; --amber-bg:#fff5e5;
+    --red:#ff4d4f; --red-bg:#ffedee;
+    --purple:#7c6fff; --purple-bg:#f1efff;
+    --body:-apple-system,"Segoe UI","Google Sans",Roboto,"Sarabun",sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;background:#dfe4ee;color:var(--text);font-family:var(--body);}
+  body{display:flex;flex-direction:column;overflow:hidden;}
+
+  /* จอกว้าง (คอมพิวเตอร์): ขยายเนื้อหาให้กว้างขึ้น แต่ยังจำกัดความกว้างพอเหมาะเพื่อให้อ่านง่าย */
+  @media (min-width:720px){
+    html,body{height:100vh;}
+    body{max-width:900px;margin:0 auto;background:#fff;box-shadow:0 0 40px rgba(20,30,60,.08);}
+    .tabs{flex-wrap:wrap;}
+    .view{padding-left:28px;padding-right:28px;}
+    .card{padding:20px;}
+  }
+  .view{background:var(--bg);}
+
+  /* header */
+  .topbar{background:#fff;flex-shrink:0;padding:16px 16px 0;border-bottom:1px solid var(--border);}
+  .brandrow{display:flex;align-items:center;gap:10px;padding-bottom:14px;}
+  .brandrow .logo{width:40px;height:40px;border-radius:13px;
+    background:linear-gradient(135deg,#4C8DFF 0%,#7C6FFF 60%,#22c55e 130%);
+    display:flex;align-items:center;justify-content:center;font-size:19px;
+    box-shadow:0 4px 12px rgba(76,141,255,.35);}
+  .brandrow .name{color:var(--text);font-weight:800;font-size:17px;letter-spacing:.2px;}
+  .brandrow .sub{color:var(--muted);font-size:10.5px;letter-spacing:.6px;font-weight:600;}
+  .tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:12px;}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{flex-shrink:0;padding:9px 15px;border-radius:20px;background:var(--bg);color:var(--muted);
+    font-size:12.5px;font-weight:700;border:none;display:flex;align-items:center;gap:5px;white-space:nowrap;}
+  .tab.active{background:var(--blue);color:#fff;box-shadow:0 3px 10px rgba(61,127,255,.35);}
+
+  #app-root{display:flex;flex-direction:column;height:100%;overflow:hidden;}
+  .view{flex:1;overflow-y:auto;padding:16px 16px 32px;display:none;}
+  .view.active{display:block;}
+
+  .rowhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;}
+  .rowhead h1{font-size:16px;font-weight:800;}
+  .rowhead p{font-size:11.5px;color:var(--muted);margin-top:2px;}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:12px 18px;border-radius:14px;
+    font-weight:700;font-size:13.5px;border:1.5px solid var(--blue);background:#fff;color:var(--blue);cursor:pointer;
+    font-family:var(--body);text-decoration:none;transition:transform .1s;}
+  .btn:active{transform:scale(.97);}
+  .btn.solid{background:linear-gradient(135deg,#4C8DFF,#3d7fff);color:#fff;border-color:transparent;
+    box-shadow:0 4px 12px rgba(61,127,255,.3);}
+  .btn.block{display:flex;width:100%;}
+  .btn.small{padding:8px 13px;font-size:12px;border-radius:11px;}
+  .btn.ghost{border-color:var(--border);color:var(--text);background:#fff;}
+  .btn.red{border-color:transparent;color:var(--red);background:var(--red-bg);}
+
+  .stat3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;}
+  .stat{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px 6px;text-align:center;
+    box-shadow:0 2px 10px rgba(20,30,60,.04);}
+  .stat .num{font-size:23px;font-weight:800;color:var(--blue);}
+  .stat .lbl{font-size:10.5px;color:var(--muted);margin-top:3px;font-weight:600;}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:16px;margin-bottom:14px;
+    box-shadow:0 2px 14px rgba(20,30,60,.05);}
+  .point-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+  .point-title{font-size:15px;font-weight:800;display:flex;gap:6px;align-items:center;}
+  .tagrow{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+  .tag{font-size:10.5px;padding:4px 10px;border-radius:20px;font-weight:700;}
+  .tag.type{background:var(--purple-bg);color:var(--purple);}
+  .tag.overdue{background:var(--amber-bg);color:var(--amber);}
+  .tag.ok{background:var(--green-bg);color:var(--green);}
+  .btnrow{display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap;}
+  .meta{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.7;}
+  .log-empty{font-size:12px;color:var(--muted);margin-top:10px;}
+  .divider{height:1px;background:var(--border);margin:12px 0;}
+
+  .log-item{background:var(--blue-light);border-radius:14px;padding:12px;margin-top:10px;}
+  .log-item .lhead{display:flex;justify-content:space-between;font-size:11.5px;font-weight:800;color:var(--blue-dark);}
+  .log-item .lbody{font-size:12.5px;margin-top:5px;color:var(--text);}
+  .log-item .lmeta{font-size:10.5px;color:var(--muted);margin-top:5px;}
+  .thumbs{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+  .thumbs img{width:64px;height:64px;border-radius:12px;object-fit:cover;border:1px solid var(--border);flex-shrink:0;}
+  .log-item .thumbs img{width:56px;height:56px;border-radius:10px;}
+
+  label{display:block;font-size:12px;color:var(--muted);margin:10px 0 5px;font-weight:700;}
+  input[type=text],input[type=date],select,textarea{
+    width:100%;padding:11px 12px;border-radius:12px;border:1.5px solid var(--border);
+    background:#fafbfd;color:var(--text);font-size:14px;font-family:var(--body);
+  }
+  textarea{resize:vertical;min-height:64px;}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);background:#fff;}
+
+  .file-drop{border:1.5px dashed #c7d2e8;border-radius:14px;padding:16px;text-align:center;
+    color:var(--muted);font-size:12.5px;margin-top:6px;cursor:pointer;background:var(--blue-light);font-weight:600;}
+  .thumbs-edit{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+  .thumbs-edit .thumb-wrap{position:relative;}
+  .thumbs-edit img{width:60px;height:60px;object-fit:cover;border-radius:12px;border:1px solid var(--border);}
+  .thumb-del{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--red);
+    color:#fff;border:2px solid #fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;
+    cursor:pointer;line-height:1;}
+
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  th{text-align:left;color:var(--muted);font-size:10.5px;padding:8px 4px;border-bottom:1.5px solid var(--border);}
+  td{padding:10px 4px;border-bottom:1px solid var(--border);vertical-align:top;}
+  .pill{font-size:10px;padding:4px 10px;border-radius:20px;font-weight:700;display:inline-block;}
+
+  .modal-bg{position:fixed;inset:0;background:rgba(20,25,40,.5);display:none;align-items:flex-end;z-index:50;
+    backdrop-filter:blur(2px);}
+  .modal-bg.active{display:flex;}
+  .modal{background:#fff;border-radius:24px 24px 0 0;padding:20px;width:100%;max-height:86vh;overflow-y:auto;}
+  .modal h3{font-size:16px;font-weight:800;margin-bottom:4px;color:var(--text);}
+  .modal-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  .xbtn{background:var(--bg);border:none;width:30px;height:30px;border-radius:10px;font-size:14px;color:var(--muted);}
+
+  .empty-note{color:var(--muted);font-size:12.5px;text-align:center;padding:28px 0;}
+
+  .rider-progress{height:8px;background:var(--border);border-radius:20px;overflow:hidden;margin-top:12px;}
+  .rider-progress-fill{height:100%;background:linear-gradient(90deg,#4C8DFF,#22c55e);border-radius:20px;transition:width .3s;}
+  .rider-progress-label{font-size:11px;color:var(--muted);margin-top:5px;font-weight:700;text-align:right;}
+
+  .rider-hero{background:linear-gradient(135deg,#eaf1ff,#f1efff);border:1.5px solid var(--blue);border-radius:16px;
+    padding:16px;margin-top:12px;}
+  .rider-hero.rider-done{background:var(--green-bg);border-color:var(--green);text-align:center;font-weight:700;
+    color:#178a4c;padding:20px;}
+  .rider-hero-label{font-size:11px;font-weight:800;color:var(--blue-dark);letter-spacing:.5px;text-transform:uppercase;}
+  .rider-hero-name{font-size:17px;font-weight:800;margin-top:4px;}
+  .rider-hero-type{font-size:12px;color:var(--muted);margin-top:2px;}
+
+  .rider-queue{margin-top:14px;position:relative;}
+  .rider-step{display:flex;align-items:center;gap:10px;padding:8px 0;position:relative;}
+  .rider-step:not(:last-child)::after{content:'';position:absolute;left:13px;top:34px;bottom:-8px;width:2px;background:var(--border);}
+  .rider-dot{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:800;background:var(--border);color:var(--muted);z-index:1;}
+  .rider-step.done .rider-dot{background:var(--green);color:#fff;}
+  .rider-step.current .rider-dot{background:var(--blue);color:#fff;box-shadow:0 0 0 4px var(--blue-light);}
+  .rider-step-info{flex:1;min-width:0;}
+  .rider-step-name{font-size:12.5px;font-weight:700;}
+  .rider-step.done .rider-step-name{color:var(--muted);text-decoration:line-through;}
+  .rider-step-type{font-size:10.5px;color:var(--muted);}
+
+  .cal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  .cal-head .m{font-weight:800;color:var(--text);font-size:14.5px;}
+  .cal-nav{background:var(--bg);border:none;color:var(--blue);border-radius:10px;
+    width:34px;height:34px;font-size:16px;font-weight:800;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;}
+  .cal-grid .dow{font-size:10px;color:var(--muted);padding-bottom:6px;font-weight:700;}
+  .cal-day{aspect-ratio:1;border-radius:10px;background:var(--bg);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;font-size:12px;font-weight:600;border:1.5px solid transparent;
+    position:relative;cursor:pointer;}
+  .cal-day.today{border-color:var(--blue);color:var(--blue);font-weight:800;}
+  .cal-day.empty{background:transparent;cursor:default;}
+  .cal-day .dot{width:5px;height:5px;border-radius:50%;background:var(--green);position:absolute;bottom:6px;}
+  .note-item{background:var(--blue-light);border-radius:10px;padding:9px 11px;font-size:12.5px;margin-bottom:7px;
+    border-left:3px solid var(--blue);display:flex;justify-content:space-between;gap:8px;align-items:flex-start;}
+  .note-item .ntext{flex:1;}
+  .note-item .nactions{display:flex;gap:4px;flex-shrink:0;}
+  .note-item .nactions button{background:none;border:none;font-size:13px;color:var(--muted);cursor:pointer;}
+
+  /* จัดกรอบรายงาน (Report) ให้เป็นระเบียบ ทั้งบนหน้าจอและตอนพิมพ์ */
+  .rep-item{background:#fafbfd;border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px;}
+  .rep-item-head{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13.5px;}
+  .rep-sub{font-size:11.5px;color:var(--muted);margin-top:2px;}
+  .rep-text{font-size:12.5px;margin-top:6px;line-height:1.6;}
+  .rep-badge{font-size:10.5px;padding:3px 9px;border-radius:20px;font-weight:700;flex-shrink:0;white-space:nowrap;}
+  .rep-badge.rep-ok{background:var(--green-bg);color:var(--green);}
+  .rep-badge.rep-pending{background:var(--amber-bg);color:var(--amber);}
+  .rep-photo-label{font-size:11.5px;font-weight:700;margin-top:8px;}
+  .rep-thumbs{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+  .rep-thumbs img{width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--border);}
+  ::-webkit-scrollbar{width:0;}
+
+  .subtabs{display:flex;gap:6px;border-bottom:1.5px solid var(--border);margin-bottom:14px;}
+  .subtab{flex:1;background:none;border:none;padding:10px 4px;font-size:12px;font-weight:700;color:var(--muted);
+    border-bottom:2.5px solid transparent;font-family:var(--body);}
+  .subtab.active{color:var(--blue);border-bottom-color:var(--blue);}
+  .logsec{display:none;}
+  .logsec.active{display:block;}
+  .check-item{display:flex;flex-wrap:wrap;align-items:center;gap:10px;background:#fafbfd;border:1.5px solid var(--border);
+    border-radius:12px;padding:11px 12px;margin-bottom:8px;font-size:13px;font-weight:600;}
+  .check-item input[type=checkbox]{width:19px;height:19px;flex-shrink:0;accent-color:var(--blue);}
+  .check-item.checked{background:var(--green-bg);border-color:var(--green);color:#178a4c;}
+  .device-fields input{padding:8px 10px;font-size:12.5px;font-weight:500;border-radius:8px;}  /* ===== หน้า Login / สมัครสมาชิก ===== */
+  #auth-screen{position:fixed;inset:0;background:linear-gradient(160deg,#0e1b3d,#1f2b5c);
+    display:flex;align-items:center;justify-content:center;padding:20px;z-index:100;}
+  .auth-box{background:#fff;border-radius:22px;padding:28px 22px;width:100%;max-width:360px;
+    box-shadow:0 20px 50px rgba(0,0,0,.3);}
+  .auth-logo{width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#4C8DFF,#7C6FFF);
+    display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 12px;color:#fff;}
+  .auth-title{font-size:19px;font-weight:800;text-align:center;color:var(--text);}
+  .auth-sub{font-size:10.5px;color:var(--muted);text-align:center;letter-spacing:.5px;margin-bottom:20px;}
+  .auth-tabs{display:flex;background:var(--bg);border-radius:12px;padding:4px;margin-bottom:16px;}
+  .auth-tab{flex:1;background:none;border:none;padding:9px;border-radius:9px;font-weight:700;font-size:12.5px;
+    color:var(--muted);font-family:var(--body);}
+  .auth-tab.active{background:#fff;color:var(--blue);box-shadow:0 2px 6px rgba(0,0,0,.08);}
+  .auth-error{color:var(--red);font-size:12px;margin-top:10px;text-align:center;min-height:16px;}
+  .auth-note{font-size:10.5px;color:var(--muted);text-align:center;margin-top:16px;line-height:1.5;}
+</style>
+
+</head>
+<body>
+
+  <!-- ===== หน้าเข้าสู่ระบบ / สมัครสมาชิก ===== -->
+  <div id="auth-screen">
+    <div class="auth-box">
+      <div class="auth-logo">📡</div>
+      <div class="auth-title">HIGHWAY-X</div>
+      <div class="auth-sub">SMART ROAD MAINTENANCE SYSTEM</div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login-btn" onclick="switchAuthTab('login')">เข้าสู่ระบบ</button>
+        <button class="auth-tab" id="tab-register-btn" onclick="switchAuthTab('register')">สมัครสมาชิก</button>
+      </div>
+
+      <!-- เข้าสู่ระบบ -->
+      <div id="auth-login">
+        <label>ชื่อผู้ใช้ (Username)</label>
+        <input type="text" id="login-name" placeholder="ชื่อของคุณ">
+        <label>รหัสผ่าน (Password)</label>
+        <input type="password" id="login-pass" placeholder="รหัสผ่าน">
+        <div style="height:12px"></div>
+        <button class="btn solid block" onclick="doLogin()">เข้าสู่ระบบ</button>
+        <div id="login-error" class="auth-error"></div>
+      </div>
+
+      <!-- สมัครสมาชิก -->
+      <div id="auth-register" style="display:none;">
+        <label>ชื่อ-นามสกุล</label>
+        <input type="text" id="reg-name" placeholder="เช่น สมชาย ใจดี">
+        <label>ทีม/หน่วยงาน</label>
+        <input type="text" id="reg-team" placeholder="เช่น ทีม สายลุย">
+        <label>ตั้งรหัสผ่าน (Password)</label>
+        <input type="password" id="reg-pass" placeholder="อย่างน้อย 4 ตัวอักษร">
+        <div style="height:12px"></div>
+        <button class="btn solid block" onclick="doRegister()">สมัครสมาชิก</button>
+        <div id="register-error" class="auth-error"></div>
+      </div>
+
+      <div class="auth-note">⚠️ ข้อมูลบัญชีเก็บในเครื่องนี้เท่านั้น ใช้สำหรับล็อคหน้าจอ ไม่เชื่อมกับเครื่องอื่น</div>
+    </div>
+  </div>
+
+  <!-- ===== แอปหลัก (แสดงหลังล็อกอินสำเร็จ) ===== -->
+  <div id="app-root" style="display:none;">
+
+  <div class="topbar">
+    <div class="brandrow">
+      <div class="logo">📡</div>
+      <div>
+        <div class="name">HIGHWAY-X</div>
+        <div class="sub">SMART ROAD MAINTENANCE SYSTEM</div>
+      </div>
+      <button class="btn ghost small" style="margin-left:auto;flex-shrink:0;" onclick="doLogout()">🚪 ออกจากระบบ</button>
+    </div>
+    <div class="tabs">
+      <button class="tab active" data-v="map" onclick="switchView('map')">🗺️ แผนที่</button>
+      <button class="tab" data-v="ma" onclick="switchView('ma')">🔧 งาน MA</button>
+      <button class="tab" data-v="trip" onclick="switchView('trip')">🚗 เดินทาง</button>
+      <button class="tab" data-v="table" onclick="switchView('table')">📋 ตาราง MA</button>
+      <button class="tab" data-v="repair" onclick="switchView('repair')">🧰 ซ่อมบำรุง</button>
+      <button class="tab" data-v="inventory" onclick="switchView('inventory')">🗄️ คลังอุปกรณ์</button>
+      <button class="tab" data-v="cal" onclick="switchView('cal')">📅 ปฏิทิน</button>
+      <button class="tab" data-v="users" onclick="switchView('users')">👤 ผู้ใช้งาน</button>
+    </div>
+  </div>
+
+  <!-- ===== แผนที่ ===== -->
+  <div class="view active" id="view-map">
+    <div class="stat3">
+      <div class="stat"><div class="num" id="s-total">0</div><div class="lbl">จุดทั้งหมด</div></div>
+      <div class="stat"><div class="num" id="s-overdue">0</div><div class="lbl">ครบกำหนด</div></div>
+      <div class="stat"><div class="num" id="s-ok">0</div><div class="lbl">ยังไม่ถึงกำหนด</div></div>
+    </div>
+    <div class="card">
+      <div class="rowhead"><div><h1>แผนที่ระบบหลัก</h1><p>เชื่อมต่อไปยังระบบแผนที่จริง</p></div></div>
+      <a class="btn solid block" href="http://171.103.110.94:4999/" target="_blank">เปิดแผนที่ระบบ</a>
+    </div>
+    <div class="card">
+      <div class="rowhead">
+        <div><h1>🗺️ Google Maps</h1><p>เปิดแอป Google Maps เพื่อดูตำแหน่งปัจจุบัน (GPS)</p></div>
+      </div>
+      <a class="btn solid block" href="https://www.google.com/maps/@?api=1&map_action=map" target="_blank">📍 เปิด Google Maps ดูตำแหน่งฉัน</a>
+      <div style="height:10px"></div>
+      <iframe id="map-frame" src="https://maps.google.com/maps?q=13.7563,100.5018&z=12&output=embed"
+        style="width:100%;height:220px;border:1px solid var(--border);border-radius:10px;" loading="lazy"></iframe>
+    </div>
+    <div class="card">
+      <h1 style="font-size:14px;margin-bottom:10px;">🔍 ค้นหาจุดงานด่วน</h1>
+      <div id="map-type-filter" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;"></div>
+      <input type="text" id="map-search" placeholder="ค้นหาชื่อจุด..." oninput="renderMapSearch()">
+      <div id="map-search-results" style="margin-top:10px;"></div>
+    </div>
+    <div class="card">
+      <h1 style="font-size:14px;margin-bottom:8px;">🕓 บันทึกล่าสุด</h1>
+      <div id="map-recent"><div class="empty-note">ยังไม่มีบันทึก</div></div>
+    </div>
+  </div>
+
+  <!-- ===== งาน MA ===== -->
+  <div class="view" id="view-ma">
+    <div class="rowhead">
+      <div><h1>บันทึกงาน MA ทีมช่าง</h1><p>กรอกรายละเอียดงาน อัปโหลดรูปภาพ และจบงานแต่ละจุด</p></div>
+      <button class="btn solid small" onclick="openAddPoint()">+ จุด</button>
+    </div>
+    <div class="card" style="padding:12px;">
+      <label style="margin-top:0;">เลือกแผนเดินทาง</label>
+      <select id="ma-filter-trip" onchange="renderMA()">
+        <option value="">— ทุกแผนเดินทาง (แสดงทุกจุด) —</option>
+      </select>
+      <label>กรองตามประเภท</label>
+      <select id="ma-filter-type" onchange="renderMA()">
+        <option value="">ทุกประเภท</option>
+      </select>
+    </div>
+    <div id="ma-list"></div>
+  </div>
+
+  <!-- ===== เดินทาง ===== -->
+  <div class="view" id="view-trip">
+    <div class="rowhead">
+      <div><h1>แผนการเดินทาง MA</h1><p>จัดทีมช่างและเส้นทางลงพื้นที่</p></div>
+      <button class="btn solid small" onclick="openAddTrip()">+ สร้างแผน</button>
+    </div>
+    <div id="trip-list"><div class="empty-note">ยังไม่มีแผนเดินทาง</div></div>
+  </div>
+
+  <!-- ===== ตาราง MA ===== -->
+  <div class="view" id="view-table">
+    <div class="rowhead"><div><h1>ตาราง MA (ทุก 6 เดือน)</h1><p>สรุปกำหนดการบำรุงรักษาทุกจุด</p></div></div>
+    <div class="card" style="overflow-x:auto;">
+      <table>
+        <thead><tr><th>จุดสำรวจ</th><th>MA ล่าสุด</th><th>MA ถัดไป</th><th>สถานะ</th></tr></thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== ซ่อมบำรุง (Maintenance) แยกต่างหาก ===== -->
+  <div class="view" id="view-repair">
+    <div class="rowhead">
+      <div><h1>รายการซ่อมบำรุง (Maintenance)</h1><p>บันทึกงานซ่อม พร้อมข้อมูลอุปกรณ์และไฟล์แนบ</p></div>
+      <button class="btn solid small" onclick="openAddRepair()">+ แจ้งซ่อม</button>
+    </div>
+    <div id="repair-list"><div class="empty-note">ยังไม่มีรายการซ่อมบำรุง</div></div>
+  </div>
+
+  <!-- ===== คลังอุปกรณ์ (Equipment Inventory) แยกต่างหาก ===== -->
+  <div class="view" id="view-inventory">
+    <div class="rowhead">
+      <div><h1>คลังอุปกรณ์ตามสถานที่ (ด่าน)</h1><p>บันทึกหมุด + อุปกรณ์ในแต่ละสถานที่ เชื่อมกับงาน MA ได้</p></div>
+      <button class="btn solid small" onclick="openAddSite()">+ สถานที่</button>
+    </div>
+    <div id="site-list"><div class="empty-note">ยังไม่มีสถานที่ในคลัง</div></div>
+  </div>
+
+  <!-- ===== ปฏิทิน (Calendar) ===== -->
+  <div class="view" id="view-cal">
+    <div class="rowhead">
+      <div><h1>ปฏิทินบันทึกงาน</h1><p>ดูย้อนหลังงานซ่อมบำรุง/แผนเดินทางที่เสร็จ และเพิ่มโน้ตเองได้</p></div>
+    </div>
+    <div class="card">
+      <div class="cal-head">
+        <button class="cal-nav" onclick="calShift(-1)">‹</button>
+        <div class="m" id="cal-month"></div>
+        <button class="cal-nav" onclick="calShift(1)">›</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+    <div class="card">
+      <h1 style="font-size:14px;margin-bottom:8px;">📝 บันทึกล่าสุดทั้งหมด</h1>
+      <div id="cal-upcoming"><div class="empty-note">ยังไม่มีบันทึก</div></div>
+    </div>
+  </div>
+
+  <!-- ===== ผู้ใช้งาน (Users) ===== -->
+  <div class="view" id="view-users">
+    <div class="rowhead">
+      <div><h1>ผู้ใช้งานที่สมัครในเครื่องนี้</h1><p>รายชื่อบัญชีที่ล็อกอินเข้าแอปนี้ (รหัสผ่านถูกเข้ารหัสไว้ ไม่แสดง)</p></div>
+    </div>
+    <div class="card">
+      <div class="meta">👤 กำลังใช้งานอยู่: <b id="current-user-label">-</b></div>
+    </div>
+    <div id="user-list"></div>
+  </div>
+
+  <!-- ===== modal: โน้ตรายวัน (เพิ่ม/แก้ไข/ลบ) ===== -->
+  <div class="modal-bg" id="modal-day">
+    <div class="modal">
+      <div class="modal-top"><h3 id="day-modal-title">📅 บันทึกวันที่</h3><button class="xbtn" onclick="closeModal('modal-day')">✕</button></div>
+      <div id="day-notes-list"></div>
+      <label>เพิ่มโน้ตใหม่</label>
+      <textarea id="day-new-note" placeholder="พิมพ์บันทึกสำหรับวันนี้..."></textarea>
+      <div style="height:10px"></div>
+      <button class="btn solid block" onclick="addDayNote()">+ เพิ่มโน้ต</button>
+    </div>
+  </div>
+
+  <!-- ===== modal: เพิ่มจุด ===== -->
+  <div class="modal-bg" id="modal-point">
+    <div class="modal">
+      <div class="modal-top"><h3 id="point-modal-title">🏗️ เพิ่มจุดสำรวจ</h3><button class="xbtn" onclick="closeModal('modal-point')">✕</button></div>
+      <label>ชื่อจุดสำรวจ</label>
+      <input type="text" id="p-name" placeholder="เช่น หนองไม้แดง CCTV 05">
+      <button class="btn ghost small" style="margin-top:6px;" onclick="searchNameOnMaps('p-name')">🔍 ค้นหาชื่อนี้ใน Google Maps</button>
+      <label>ประเภทระบบ</label>
+      <select id="p-type">
+        <option>กล้องจับความเร็ว</option>
+        <option>ทางข้ามอัจฉริยะ</option>
+        <option>CCTV</option>
+        <option>อื่นๆ</option>
+      </select>
+      <label>รุ่น / โมเดล</label>
+      <input type="text" id="p-model" placeholder="เช่น RS-2000">
+      <label>หมายเลขเครื่อง S/N</label>
+      <input type="text" id="p-sn" placeholder="เช่น SN-887744">
+      <label>พิกัด GPS (Latitude, Longitude)</label>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="p-lat" placeholder="Latitude เช่น 13.7563">
+        <input type="text" id="p-lng" placeholder="Longitude เช่น 100.5018">
+      </div>
+      <button class="btn ghost small" style="margin-top:8px;" onclick="window.open('https://www.google.com/maps/@?api=1&map_action=map','_blank')">📍 เปิด Google Maps เพื่อคัดลอกพิกัด</button>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px;">กดค้างจุดบนแผนที่ใน Google Maps เพื่อดูพิกัด แล้วนำมาใส่ในช่องด้านบน</div>
+      <label>ลิงก์แผนที่ (Map Link)</label>
+      <input type="text" id="p-maplink" placeholder="วางลิงก์ Google Maps ที่นี่ก็ได้">
+      <label>ลิงก์อื่นๆ (Other Link)</label>
+      <input type="text" id="p-otherlink" placeholder="เช่น ลิงก์เอกสาร, รูปภาพ, วิดีโอ">
+      <label>รอบ MA (เดือน)</label>
+      <input type="text" id="p-interval" placeholder="6" value="6">
+      <label>📷 รูปภาพจุดสำรวจ (อัปโหลดได้หลายรูป)</label>
+      <div class="file-drop" onclick="document.getElementById('p-photo').click()">📎 แตะเพื่อเพิ่มรูปภาพ</div>
+      <input type="file" id="p-photo" accept="image/*" multiple style="display:none">
+      <div class="thumbs-edit" id="p-thumbs"></div>
+      <div style="height:12px"></div>
+      <button class="btn solid block" id="point-save-btn" onclick="savePoint()">บันทึกจุดสำรวจ</button>
+    </div>
+  </div>
+
+  <!-- ===== modal: บันทึกงาน MA ===== -->
+  <div class="modal-bg" id="modal-log">
+    <div class="modal">
+      <div class="modal-top"><h3 id="log-title">📝 บันทึกงาน MA</h3><button class="xbtn" onclick="closeModal('modal-log')">✕</button></div>
+      <div id="log-point-tag" class="tagrow" style="margin-bottom:10px;"></div>
+
+      <div class="subtabs">
+        <button class="subtab active" data-sv="check" onclick="switchLogTab('check')">✅ Checklist</button>
+        <button class="subtab" data-sv="detail" onclick="switchLogTab('detail')">📝 รายละเอียด</button>
+        <button class="subtab" data-sv="photo" onclick="switchLogTab('photo')">📷 รูปภาพ</button>
+      </div>
+
+      <!-- Checklist -->
+      <div class="logsec active" id="logsec-check">
+        <button class="btn ghost small" style="margin-bottom:10px;" onclick="openChecklistManage()">⚙️ จัดการรายการตรวจ (เพิ่ม/ลบ)</button>
+        <div id="l-checklist"></div>
+        <label>ผลการตรวจโดยรวม</label>
+        <select id="l-status">
+          <option value="ok">✅ ปกติ / ผ่าน</option>
+          <option value="fix">🔧 ซ่อมแซมบางส่วน</option>
+          <option value="issue">❌ พบปัญหา / รอแผน</option>
+        </select>
+      </div>
+
+      <!-- รายละเอียด -->
+      <div class="logsec" id="logsec-detail">
+        <label>ชื่อช่าง / ทีมผู้ดำเนินการ</label>
+        <input type="text" id="l-worker" placeholder="เช่น สมชาย + วิชัย">
+        <label>ชื่อผู้แจ้ง</label>
+        <input type="text" id="l-reporter" placeholder="ชื่อ-นามสกุล">
+        <label>รายละเอียดงานที่ทำ</label>
+        <textarea id="l-detail" placeholder="เช่น ทำความสะอาดเลนส์กล้อง, ตรวจสอบสายสัญญาณ..."></textarea>
+        <label>อุปกรณ์ที่เปลี่ยน / ซ่อม</label>
+        <textarea id="l-parts" placeholder="เช่น เปลี่ยน HDD NVR 4TB, ซ่อมสาย RJ45"></textarea>
+        <label>ปัญหาที่พบ / แนะนำติดตาม</label>
+        <textarea id="l-issue" placeholder="เช่น กล้อง #3 โฟกัสเบลอ ควรเปลี่ยนในรอบถัดไป"></textarea>
+      </div>
+
+      <!-- รูปภาพ -->
+      <div class="logsec" id="logsec-photo">
+        <label>รูปภาพหน้างาน</label>
+        <div class="file-drop" onclick="document.getElementById('l-photo').click()">📷 แตะเพื่อเพิ่มรูปภาพ (อัปโหลดได้หลายรูป)</div>
+        <input type="file" id="l-photo" accept="image/*" multiple style="display:none">
+        <div class="thumbs-edit" id="l-thumbs"></div>
+      </div>
+
+      <div style="height:12px"></div>
+      <div class="btnrow">
+        <button class="btn ghost" onclick="closeModal('modal-log')">ยกเลิก</button>
+        <button class="btn ghost" id="log-maps-btn" onclick="openLogMaps()">📍 Maps</button>
+        <button class="btn solid" style="flex:1;background:linear-gradient(135deg,#22c55e,#16a34a);" onclick="saveLog()">💾 บันทึกและจบงาน</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== modal: สร้างแผนเดินทาง ===== -->
+  <div class="modal-bg" id="modal-trip">
+    <div class="modal">
+      <div class="modal-top"><h3 id="trip-modal-title">🚗 สร้างแผนเดินทาง MA</h3><button class="xbtn" onclick="closeModal('modal-trip')">✕</button></div>
+      <label>ชื่อทีมช่าง</label>
+      <input type="text" id="t-team" placeholder="เช่น ทีม สายลุย">
+      <label>วันที่เริ่มงาน</label>
+      <input type="date" id="t-date">
+      <label>วันที่สิ้นสุด (ถ้าออกงานหลายวัน เช่น ต่างจังหวัด)</label>
+      <input type="date" id="t-end-date">
+      <div style="font-size:11px;color:var(--muted);margin-top:4px;">ถ้าเป็นงานวันเดียว ปล่อยว่างไว้ได้ หรือใส่วันเดียวกับวันเริ่มงาน</div>
+      <label>ชื่อแผนเดินทาง</label>
+      <input type="text" id="t-name" placeholder="เช่น MA รอบ Q3/2569 – ทีม A">
+      <label>จุดเริ่มต้น (Depot)</label>
+      <input type="text" id="t-start" placeholder="เช่น สำนักงาน ถ.วิภาวดี">
+
+      <label style="display:flex;justify-content:space-between;align-items:center;">
+        <span>ลำดับจุดสำรวจ</span>
+        <button class="btn ghost small" onclick="addAllPointsToTrip()">+ ทุกจุด</button>
+      </label>
+      <div style="display:flex;gap:8px;">
+        <select id="t-point-select" style="flex:1;"></select>
+        <button class="btn solid small" onclick="addPointToTrip()">+ เพิ่ม</button>
+      </div>
+      <div id="t-point-list" style="margin-top:10px;"></div>
+
+      <div style="height:12px"></div>
+      <button class="btn solid block" id="trip-save-btn" onclick="saveTrip()">บันทึกแผนเดินทาง</button>
+    </div>
+  </div>
+
+  <!-- ===== modal: แจ้งซ่อมบำรุง (แยกต่างหาก) ===== -->
+  <div class="modal-bg" id="modal-repair">
+    <div class="modal">
+      <div class="modal-top"><h3 id="repair-modal-title">🧰 แจ้งซ่อมบำรุง</h3><button class="xbtn" onclick="closeModal('modal-repair')">✕</button></div>
+      <label>ชื่ออุปกรณ์ / จุดที่ซ่อม</label>
+      <input type="text" id="r-name" placeholder="เช่น กล้องจับความเร็ว กม.47+200">
+      <label>ประเภทอุปกรณ์</label>
+      <select id="r-type">
+        <option>กล้องจับความเร็ว</option>
+        <option>ทางข้ามอัจฉริยะ</option>
+        <option>CCTV</option>
+        <option>อื่นๆ</option>
+      </select>
+      <label>รุ่น / โมเดล (Model)</label>
+      <input type="text" id="r-model" placeholder="เช่น RS-2000">
+      <label>หมายเลขเครื่อง S/N</label>
+      <input type="text" id="r-sn" placeholder="เช่น SN-887744">
+      <label>ชื่อผู้แจ้ง</label>
+      <input type="text" id="r-reporter" placeholder="ชื่อ-นามสกุล">
+      <label>ชื่อผู้ออกหน้างาน (ช่าง)</label>
+      <input type="text" id="r-worker" placeholder="ชื่อ-นามสกุล">
+      <label>อาการ / รายละเอียดงานซ่อม</label>
+      <textarea id="r-detail" placeholder="อธิบายอาการเสีย / งานที่ทำ..."></textarea>
+      <label>ลิงก์แผนที่ (Map Link)</label>
+      <input type="text" id="r-maplink" placeholder="วางลิงก์ Google Maps ที่นี่ก็ได้">
+      <label>ลิงก์อื่นๆ (Other Link)</label>
+      <input type="text" id="r-otherlink" placeholder="เช่น ลิงก์เอกสาร, รูปภาพ, วิดีโอ">
+      <label>สถานะ</label>
+      <select id="r-status">
+        <option value="pending">รอดำเนินการ</option>
+        <option value="progress">กำลังซ่อม</option>
+        <option value="done">เสร็จสิ้น</option>
+      </select>
+      <label>📷 รูปก่อนทำ (Before)</label>
+      <div class="file-drop" onclick="document.getElementById('r-file-before').click()">📎 แตะเพื่อแนบรูปก่อนทำ</div>
+      <input type="file" id="r-file-before" accept="image/*" multiple style="display:none">
+      <div class="thumbs-edit" id="r-thumbs-before"></div>
+      <label>📷 รูปหลังทำ (After)</label>
+      <div class="file-drop" onclick="document.getElementById('r-file-after').click()">📎 แตะเพื่อแนบรูปหลังทำ</div>
+      <input type="file" id="r-file-after" accept="image/*" multiple style="display:none">
+      <div class="thumbs-edit" id="r-thumbs-after"></div>
+      <label>📎 ไฟล์แนบอื่นๆ (เอกสาร/PDF)</label>
+      <div class="file-drop" onclick="document.getElementById('r-file').click()">📎 แตะเพื่อแนบไฟล์ (แนบได้หลายไฟล์)</div>
+      <input type="file" id="r-file" accept="image/*,.pdf,.doc,.docx" style="display:none">
+      <div id="r-filenames" style="font-size:11.5px;color:var(--muted);margin-top:6px;"></div>
+      <div style="height:12px"></div>
+      <button class="btn solid block" id="repair-save-btn" onclick="saveRepair()">บันทึกรายการซ่อมบำรุง</button>
+    </div>
+  </div>
+
+  <!-- ===== modal: เพิ่ม/แก้ไข สถานที่ (ด่าน) ===== -->
+  <div class="modal-bg" id="modal-site">
+    <div class="modal">
+      <div class="modal-top"><h3 id="site-modal-title">📍 เพิ่มสถานที่ (ด่าน)</h3><button class="xbtn" onclick="closeModal('modal-site')">✕</button></div>
+      <label>ชื่อสถานที่ / ด่าน</label>
+      <input type="text" id="s-name" placeholder="เช่น ด่านหนองไม้แดง กม.47">
+      <button class="btn ghost small" style="margin-top:6px;" onclick="searchNameOnMaps('s-name')">🔍 ค้นหาชื่อนี้ใน Google Maps</button>
+      <label>พิกัด GPS (Latitude, Longitude)</label>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="s-lat" placeholder="Latitude เช่น 13.7563">
+        <input type="text" id="s-lng" placeholder="Longitude เช่น 100.5018">
+      </div>
+      <button class="btn ghost small" style="margin-top:8px;" onclick="window.open('https://www.google.com/maps/@?api=1&map_action=map','_blank')">📍 เปิด Google Maps เพื่อคัดลอกพิกัด</button>
+      <label>ลิงก์แผนที่ (Map Link)</label>
+      <input type="text" id="s-maplink" placeholder="วางลิงก์ Google Maps ที่นี่ก็ได้">
+      <label>ลิงก์อื่นๆ (Other Link)</label>
+      <input type="text" id="s-otherlink" placeholder="เช่น ลิงก์เอกสาร, รูปภาพ, วิดีโอ">
+      <label>เชื่อมกับจุดงาน MA (ถ้ามี)</label>
+      <select id="s-link-point"><option value="">— ไม่เชื่อมกับจุด MA —</option></select>
+      <label>หมายเหตุ</label>
+      <textarea id="s-note" placeholder="รายละเอียดเพิ่มเติมของสถานที่นี้..."></textarea>
+      <div style="height:12px"></div>
+      <button class="btn solid block" id="site-save-btn" onclick="saveSite()">บันทึกสถานที่</button>
+    </div>
+  </div>
+
+  <!-- ===== modal: เพิ่มอุปกรณ์ในสถานที่ ===== -->
+  <div class="modal-bg" id="modal-device">
+    <div class="modal">
+      <div class="modal-top"><h3>🔧 เพิ่มอุปกรณ์</h3><button class="xbtn" onclick="closeModal('modal-device')">✕</button></div>
+      <label>เลือกจากอุปกรณ์ในตู้คอนโทรล (แตะเพื่อใส่ชื่อให้อัตโนมัติ)</label>
+      <div id="d-preset-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px;"></div>
+      <label>ชื่ออุปกรณ์</label>
+      <input type="text" id="d-name" placeholder="เช่น กล้อง CCTV ตัวที่ 1">
+      <label>รุ่น / โมเดล (Model)</label>
+      <input type="text" id="d-model" placeholder="เช่น IS108GPS-2F">
+      <label>หมายเลขเครื่อง S/N</label>
+      <input type="text" id="d-sn" placeholder="เช่น 108GPS2F24121600099">
+      <label>สถานะอุปกรณ์</label>
+      <select id="d-status">
+        <option value="ok">✅ ปกติ</option>
+        <option value="abnormal">❌ ไม่ปกติ</option>
+      </select>
+      <div style="height:12px"></div>
+      <button class="btn solid block" onclick="saveDevice()">บันทึกอุปกรณ์</button>
+    </div>
+  </div>
+
+  <!-- ===== modal: จัดการรายการตรวจ (Checklist) ===== -->
+  <!-- ===== modal: ยืนยันจุดเสร็จสิ้น (แนบรูปได้หลายรูป) ===== -->
+  <div class="modal-bg" id="modal-complete-stop">
+    <div class="modal">
+      <div class="modal-top"><h3>✅ ยืนยันจุดนี้เสร็จสิ้น</h3><button class="xbtn" onclick="closeModal('modal-complete-stop')">✕</button></div>
+      <label>แนบรูปหลักฐาน (แนบได้หลายรูป)</label>
+      <div class="file-drop" onclick="document.getElementById('cs-file').click()">📷 แตะเพื่อเพิ่มรูปภาพ (หลายรูป)</div>
+      <input type="file" id="cs-file" accept="image/*" multiple style="display:none">
+      <div class="thumbs-edit" id="cs-thumbs"></div>
+      <label>บันทึกเพิ่มเติม (ถ้ามี)</label>
+      <textarea id="cs-note" placeholder="เช่น เสร็จเรียบร้อย ไม่พบปัญหา..."></textarea>
+      <div style="height:12px"></div>
+      <button class="btn solid block" style="background:linear-gradient(135deg,#22c55e,#16a34a);" onclick="confirmCompleteStop()">✅ ยืนยันเสร็จสิ้น</button>
+    </div>
+  </div>
+
+  <div class="modal-bg" id="modal-checklist">
+    <div class="modal">
+      <div class="modal-top"><h3>⚙️ จัดการรายการตรวจ</h3><button class="xbtn" onclick="closeModal('modal-checklist')">✕</button></div>
+      <label>ชื่ออุปกรณ์ / รายการที่ต้องตรวจ</label>
+      <input type="text" id="cl-new-label" placeholder="เช่น Main Breaker, Router, กล้อง CCTV">
+      <label style="display:flex;align-items:center;gap:8px;font-weight:600;">
+        <input type="checkbox" id="cl-new-device" style="width:18px;height:18px;" checked>
+        มีข้อมูลอุปกรณ์ (แสดงช่องรุ่น/โมเดล และ S/N)
+      </label>
+      <button class="btn solid block" style="margin-top:10px;" onclick="addChecklistItem()">+ เพิ่มรายการ</button>
+      <div class="divider"></div>
+      <div id="cl-manage-list"></div>
+    </div>
+  </div>
+
+  <!-- ===== modal: Report ===== -->
+  <div class="modal-bg" id="modal-report">
+    <div class="modal">
+      <div class="modal-top"><h3 id="report-title">📄 Report</h3><button class="xbtn" onclick="closeModal('modal-report')">✕</button></div>
+      <div id="report-body"></div>
+      <div style="height:12px"></div>
+      <div class="btnrow">
+        <button class="btn ghost" style="flex:1;" onclick="editCurrentReport()">✏️ แก้ไข</button>
+        <button class="btn solid" style="flex:1;" onclick="printCurrentReport()">🖨️ Print / Save PDF</button>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- ปิด #app-root -->
+
+<script>
+  const LS = {
+    get(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } },
+    set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  };
+
+  // ================= ระบบเข้าสู่ระบบ / สมัครสมาชิก =================
+  let users = LS.get('hwx_users', []);
+  let currentUser = null;
+
+  function simpleHash(str){
+    // เข้ารหัสแบบง่าย (ไม่ใช่การเข้ารหัสระดับสูง แต่ป้องกันไม่ให้เห็นรหัสผ่านตรงๆ)
+    let hash = 0;
+    for(let i=0;i<str.length;i++){
+      hash = (hash<<5) - hash + str.charCodeAt(i);
+      hash |= 0;
+    }
+    return 'h'+Math.abs(hash).toString(36);
+  }
+
+  function switchAuthTab(tab){
+    document.getElementById('tab-login-btn').classList.toggle('active', tab==='login');
+    document.getElementById('tab-register-btn').classList.toggle('active', tab==='register');
+    document.getElementById('auth-login').style.display = tab==='login' ? 'block' : 'none';
+    document.getElementById('auth-register').style.display = tab==='register' ? 'block' : 'none';
+    document.getElementById('login-error').textContent = '';
+    document.getElementById('register-error').textContent = '';
+  }
+
+  function doRegister(){
+    const name = document.getElementById('reg-name').value.trim();
+    const team = document.getElementById('reg-team').value.trim();
+    const pass = document.getElementById('reg-pass').value;
+    const errEl = document.getElementById('register-error');
+    if(!name || !team){ errEl.textContent = 'กรุณากรอกชื่อและทีมให้ครบ'; return; }
+    if(pass.length < 4){ errEl.textContent = 'รหัสผ่านต้องมีอย่างน้อย 4 ตัวอักษร'; return; }
+    if(users.some(u=>u.name.toLowerCase()===name.toLowerCase())){
+      errEl.textContent = 'มีชื่อผู้ใช้นี้อยู่แล้ว กรุณาเข้าสู่ระบบแทน';
+      return;
+    }
+    const user = { name, team, pass: simpleHash(pass), createdAt: fmt(new Date()) };
+    users.push(user);
+    LS.set('hwx_users', users);
+    errEl.textContent = '';
+    showApp(user);
+  }
+
+  function doLogin(){
+    const name = document.getElementById('login-name').value.trim();
+    const pass = document.getElementById('login-pass').value;
+    const errEl = document.getElementById('login-error');
+    const user = users.find(u=>u.name.toLowerCase()===name.toLowerCase());
+    if(!user){ errEl.textContent = 'ไม่พบชื่อผู้ใช้นี้ กรุณาสมัครสมาชิกก่อน'; return; }
+    if(user.pass !== simpleHash(pass)){ errEl.textContent = 'รหัสผ่านไม่ถูกต้อง'; return; }
+    errEl.textContent = '';
+    showApp(user);
+  }
+
+  function doLogout(){
+    if(!confirm('ออกจากระบบ?')) return;
+    sessionStorage.removeItem('hwx_session');
+    currentUser = null;
+    document.getElementById('app-root').style.display = 'none';
+    document.getElementById('auth-screen').style.display = 'flex';
+    document.getElementById('login-name').value = '';
+    document.getElementById('login-pass').value = '';
+  }
+
+  function showApp(user){
+    currentUser = user;
+    sessionStorage.setItem('hwx_session', user.name);
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('app-root').style.display = 'flex';
+    document.getElementById('current-user-label').textContent = user.name + ' (' + user.team + ')';
+    renderAll();
+  }
+
+  function renderUsers(){
+    const el = document.getElementById('user-list');
+    if(!el) return;
+    if(users.length===0){ el.innerHTML = '<div class="empty-note">ยังไม่มีผู้ใช้งานสมัคร</div>'; return; }
+    el.innerHTML = users.map((u,i)=>`
+      <div class="equip-item">
+        <div><b>${u.name}</b><div class="sn">${u.team} · สมัครเมื่อ ${u.createdAt}</div></div>
+        <button class="btn red small" onclick="deleteUser(${i})">ลบ</button>
+      </div>
+    `).join('');
+  }
+  function deleteUser(i){
+    if(!confirm('ลบบัญชีผู้ใช้นี้?')) return;
+    const wasSelf = currentUser && users[i].name===currentUser.name;
+    users.splice(i,1);
+    LS.set('hwx_users', users);
+    renderUsers();
+    if(wasSelf) doLogout();
+  }
+
+  let points = LS.get('hwx_points', []);
+  let trips = LS.get('hwx_trips', []);
+  let repairs = LS.get('hwx_repairs', []);
+  let sites = LS.get('hwx_sites', []);
+  let calendarNotes = LS.get('hwx_calendar', {});
+  let logPhotoBuffer = [];
+  let repairFileBuffer = [];
+  let repairBeforeBuffer = [];
+  let repairAfterBuffer = [];
+  let activeTripId = null;
+  let activePointForRepair = null;
+  let activePointId = null;
+  let activeSiteId = null;
+
+  function switchView(v){
+    document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));
+    document.getElementById('view-'+v).classList.add('active');
+    document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active', b.dataset.v===v));
+    renderAll();
+  }
+  function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+  function openModal(id){ document.getElementById(id).classList.add('active'); }
+
+  // ---- point (จุดสำรวจ) ----
+  let editingPointId = null;
+  let pointPhotoBuffer = [];
+  function renderPointThumbs(){
+    document.getElementById('p-thumbs').innerHTML = pointPhotoBuffer.map((s,i)=>
+      `<div class="thumb-wrap"><img src="${s}"><span class="thumb-del" onclick="removePointPhoto(${i})">✕</span></div>`
+    ).join('');
+  }
+  function removePointPhoto(i){
+    pointPhotoBuffer.splice(i,1);
+    renderPointThumbs();
+  }
+  document.getElementById('p-photo').addEventListener('change', function(e){
+    [...e.target.files].forEach(file=>{
+      const reader = new FileReader();
+      reader.onload = ev=>{ pointPhotoBuffer.push(ev.target.result); renderPointThumbs(); };
+      reader.readAsDataURL(file);
+    });
+  });
+  function openAddPoint(){ 
+    editingPointId = null;
+    pointPhotoBuffer = [];
+    renderPointThumbs();
+    ['p-name','p-model','p-sn','p-lat','p-lng','p-maplink','p-otherlink'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('p-interval').value='6';
+    document.getElementById('p-type').selectedIndex = 0;
+    document.getElementById('point-modal-title').textContent = '🏗️ เพิ่มจุดสำรวจ';
+    document.getElementById('point-save-btn').textContent = 'บันทึกจุดสำรวจ';
+    openModal('modal-point');
+  }
+  function openEditPoint(id){
+    const p = points.find(x=>x.id===id);
+    if(!p) return;
+    editingPointId = id;
+    pointPhotoBuffer = [...(p.photos||[])];
+    renderPointThumbs();
+    document.getElementById('p-name').value = p.name;
+    document.getElementById('p-type').value = p.type;
+    document.getElementById('p-model').value = p.model||'';
+    document.getElementById('p-sn').value = p.sn||'';
+    document.getElementById('p-lat').value = p.lat||'';
+    document.getElementById('p-lng').value = p.lng||'';
+    document.getElementById('p-maplink').value = p.mapLink||'';
+    document.getElementById('p-otherlink').value = p.otherLink||'';
+    document.getElementById('p-interval').value = p.interval||6;
+    document.getElementById('point-modal-title').textContent = '✏️ แก้ไขจุดสำรวจ';
+    document.getElementById('point-save-btn').textContent = 'บันทึกการแก้ไข';
+    openModal('modal-point');
+  }
+  function savePoint(){
+    const name = document.getElementById('p-name').value.trim();
+    if(!name){ alert('กรุณากรอกชื่อจุดสำรวจ'); return; }
+    const data = {
+      name, type: document.getElementById('p-type').value,
+      model: document.getElementById('p-model').value.trim(),
+      sn: document.getElementById('p-sn').value.trim(),
+      lat: document.getElementById('p-lat').value.trim(),
+      lng: document.getElementById('p-lng').value.trim(),
+      mapLink: document.getElementById('p-maplink').value.trim(),
+      otherLink: document.getElementById('p-otherlink').value.trim(),
+      interval: parseInt(document.getElementById('p-interval').value)||6,
+      photos: [...pointPhotoBuffer]
+    };
+    if(editingPointId){
+      const idx = points.findIndex(p=>p.id===editingPointId);
+      points[idx] = { ...points[idx], ...data };
+    } else {
+      points.unshift({ id: Date.now(), ...data, logs: [] });
+    }
+    LS.set('hwx_points', points);
+    closeModal('modal-point');
+    renderAll();
+  }
+  function deletePoint(id){
+    if(!confirm('ลบจุดสำรวจนี้?')) return;
+    points = points.filter(p=>p.id!==id);
+    LS.set('hwx_points', points);
+    renderAll();
+  }
+  function deletePointLog(pointId, logIndex){
+    if(!confirm('ลบบันทึกงาน MA รายการนี้?')) return;
+    const p = points.find(x=>x.id===pointId);
+    if(!p) return;
+    p.logs.splice(logIndex,1);
+    LS.set('hwx_points', points);
+    renderAll();
+    openReport(pointId);
+  }
+
+  function addMonths(dateStr, months){
+    const d = new Date(dateStr);
+    d.setMonth(d.getMonth()+months);
+    return d;
+  }
+  function fmt(d){ return d.toISOString().slice(0,10); }
+  function searchNameOnMaps(inputId){
+    const name = document.getElementById(inputId).value.trim();
+    if(!name){ alert('กรุณาพิมพ์ชื่อสถานที่ก่อน'); return; }
+    window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(name), '_blank');
+  }
+  function pointStatus(p){
+    if(p.logs.length===0) return {label:'ยังไม่มีบันทึก', cls:'type', next:null};
+    const last = p.logs[0];
+    const next = addMonths(last.date, p.interval);
+    const today = new Date();
+    const diffDays = Math.round((next-today)/86400000);
+    if(diffDays<=0) return {label:'ครบกำหนดแล้ว', cls:'overdue', next};
+    return {label:'อีก '+diffDays+' วัน', cls:'ok', next};
+  }
+
+  const logStatusLabel = {ok:'✅ ปกติ/ผ่าน', fix:'🔧 ซ่อมแซมบางส่วน', issue:'❌ พบปัญหา'};
+  const BASE_CHECKLIST = [
+    {label:'Clean 12 cameras (ทำความสะอาดกล้อง 12 ตัว)', device:true},
+    {label:'Check Traffic Controller #1 (ตรวจสอบตู้ควบคุมสัญญาณไฟ #1)', device:true},
+    {label:'Check Traffic Controller #2 (ตรวจสอบตู้ควบคุมสัญญาณไฟ #2)', device:true},
+    {label:'Test 4 push buttons (ทดสอบปุ่มกด 4 จุด)', device:false},
+    {label:'Check countdown lights x4 (ตรวจสอบไฟนับถอยหลัง 4 จุด)', device:false},
+    {label:'Check flasher light (ตรวจสอบไฟกระพริบ)', device:true},
+    {label:'Check PC Box x2 (ตรวจสอบกล่องควบคุม 2 ตู้)', device:true},
+    {label:'Check Router signal (ตรวจสอบสัญญาณ Router)', device:true},
+    {label:'Ping test all IPs (ทดสอบ Ping ทุก IP)', device:false},
+    {label:'Main Breaker (เมนเบรกเกอร์หลัก)', device:true},
+    {label:'Phase Protection (อุปกรณ์ป้องกันไฟเฟส)', device:true},
+    {label:'ATS (สวิตช์สลับไฟสำรองอัตโนมัติ)', device:true},
+    {label:'Controller A (บอร์ดควบคุม A)', device:true},
+    {label:'Controller B (บอร์ดควบคุม B)', device:true},
+    {label:'Industrial PC / Monitor (คอมพิวเตอร์อุตสาหกรรม/จอภาพ)', device:true},
+    {label:'PoE Switch (สวิตช์เครือข่าย PoE)', device:true},
+    {label:'WiFi Serial Device Server (ตัวแปลงสัญญาณ WiFi/Serial)', device:true},
+    {label:'Router / Modem (เราเตอร์)', device:true},
+    {label:'Power Supply (แหล่งจ่ายไฟ)', device:true},
+    {label:'UPS / Battery Backup (แบตเตอรี่สำรองไฟ)', device:true}
+  ];
+  // รายการตรวจ (Checklist) โหลดจากเครื่อง ถ้ายังไม่เคยแก้ไขจะใช้ค่าเริ่มต้นด้านบน
+  let checklistItems = LS.get('hwx_checklist_items', BASE_CHECKLIST);
+
+  function switchLogTab(v){
+    document.querySelectorAll('.subtab').forEach(b=>b.classList.toggle('active', b.dataset.sv===v));
+    document.querySelectorAll('.logsec').forEach(s=>s.classList.remove('active'));
+    document.getElementById('logsec-'+v).classList.add('active');
+  }
+
+  // ---- จัดการรายการตรวจ (เพิ่ม/ลบเอง) ----
+  function openChecklistManage(){
+    document.getElementById('cl-new-label').value = '';
+    document.getElementById('cl-new-device').checked = true;
+    renderChecklistManage();
+    openModal('modal-checklist');
+  }
+  function addChecklistItem(){
+    const label = document.getElementById('cl-new-label').value.trim();
+    if(!label){ alert('กรุณากรอกชื่ออุปกรณ์ / รายการที่ต้องตรวจ'); return; }
+    const device = document.getElementById('cl-new-device').checked;
+    checklistItems.push({ label, device });
+    LS.set('hwx_checklist_items', checklistItems);
+    document.getElementById('cl-new-label').value = '';
+    renderChecklistManage();
+    renderChecklist([]);
+  }
+  function removeChecklistItem(i){
+    if(!confirm('ลบรายการนี้ออกจาก Checklist?')) return;
+    checklistItems.splice(i,1);
+    LS.set('hwx_checklist_items', checklistItems);
+    renderChecklistManage();
+    renderChecklist([]);
+  }
+  function renderChecklistManage(){
+    const el = document.getElementById('cl-manage-list');
+    if(checklistItems.length===0){ el.innerHTML = '<div class="empty-note">ยังไม่มีรายการตรวจ</div>'; return; }
+    el.innerHTML = checklistItems.map((item,i)=>`
+      <div class="equip-item">
+        <div><b>${item.label}</b><div class="sn">${item.device?'มีข้อมูลอุปกรณ์ (รุ่น/S-N)':'ไม่มีข้อมูลอุปกรณ์'}</div></div>
+        <button class="btn red small" onclick="removeChecklistItem(${i})">ลบ</button>
+      </div>
+    `).join('');
+  }
+
+  function renderChecklist(savedState){
+    const el = document.getElementById('l-checklist');
+    el.innerHTML = checklistItems.map((item,i)=>{
+      const st = (savedState && savedState[i]) || {checked:false, model:'', sn:''};
+      return `
+      <div class="check-item ${st.checked?'checked':''}" id="check-item-${i}">
+        <label style="display:flex;align-items:center;gap:10px;width:100%;">
+          <input type="checkbox" data-i="${i}" ${st.checked?'checked':''} onchange="toggleCheckItem(${i})">
+          <span>${item.label}</span>
+        </label>
+        ${item.device ? `
+        <div class="device-fields" style="display:flex;gap:8px;width:100%;margin-top:8px;">
+          <input type="text" class="dev-model" placeholder="รุ่น/โมเดล (Model)" value="${st.model||''}">
+          <input type="text" class="dev-sn" placeholder="S/N" value="${st.sn||''}">
+        </div>` : ''}
+      </div>
+    `;}).join('');
+  }
+  function toggleCheckItem(i){
+    const item = document.getElementById('check-item-'+i);
+    const checked = item.querySelector('input[type=checkbox]').checked;
+    item.classList.toggle('checked', checked);
+  }
+  function getChecklistState(){
+    return checklistItems.map((item,i)=>{
+      const el = document.getElementById('check-item-'+i);
+      const checked = el.querySelector('input[type=checkbox]').checked;
+      const modelEl = el.querySelector('.dev-model');
+      const snEl = el.querySelector('.dev-sn');
+      return {
+        label: item.label, checked,
+        model: modelEl ? modelEl.value.trim() : '',
+        sn: snEl ? snEl.value.trim() : ''
+      };
+    });
+  }
+
+  // ---- log photo upload ----
+  document.getElementById('l-photo').addEventListener('change', function(e){
+    [...e.target.files].forEach(file=>{
+      const reader = new FileReader();
+      reader.onload = ev=>{ logPhotoBuffer.push(ev.target.result); renderLogThumbs(); };
+      reader.readAsDataURL(file);
+    });
+  });
+  function renderLogThumbs(){
+    document.getElementById('l-thumbs').innerHTML = logPhotoBuffer.map((s,i)=>
+      `<div class="thumb-wrap"><img src="${s}"><span class="thumb-del" onclick="removeLogPhoto(${i})">✕</span></div>`
+    ).join('');
+  }
+  function removeLogPhoto(i){
+    logPhotoBuffer.splice(i,1);
+    renderLogThumbs();
+  }
+
+  function openLogModal(pointId){
+    activePointId = pointId;
+    logPhotoBuffer = [];
+    renderLogThumbs();
+    ['l-reporter','l-worker','l-detail','l-parts','l-issue'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('l-status').value = 'ok';
+    renderChecklist([]);
+    switchLogTab('check');
+    const p = points.find(x=>x.id===pointId);
+    document.getElementById('log-title').textContent = '📝 บันทึกงาน MA — '+p.name;
+    document.getElementById('log-point-tag').innerHTML = `<span class="tag type">${p.type}</span>`;
+    document.getElementById('log-maps-btn').style.display = (p.lat && p.lng) ? 'inline-flex' : 'none';
+    openModal('modal-log');
+  }
+  function openLogMaps(){
+    const p = points.find(x=>x.id===activePointId);
+    if(p && p.lat && p.lng) window.open(`https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`,'_blank');
+  }
+  function saveLog(){
+    const p = points.find(x=>x.id===activePointId);
+    const reporter = document.getElementById('l-reporter').value.trim();
+    const worker = document.getElementById('l-worker').value.trim();
+    const detail = document.getElementById('l-detail').value.trim();
+    const parts = document.getElementById('l-parts').value.trim();
+    const issue = document.getElementById('l-issue').value.trim();
+    const status = document.getElementById('l-status').value;
+    if(!worker && !detail){ if(!confirm('ยังไม่ได้กรอกชื่อช่างหรือรายละเอียดงาน ต้องการบันทึกต่อไหม?')) return; }
+    p.logs.unshift({
+      date: fmt(new Date()), reporter, worker, status, detail, parts, issue,
+      checklist: getChecklistState(),
+      photos: [...logPhotoBuffer]
+    });
+    LS.set('hwx_points', points);
+    closeModal('modal-log');
+    renderAll();
+  }
+
+  let activeReportPointId = null;
+  let currentPrintHtml = '', currentPrintTitle = '';
+  let currentReportType = null, currentReportId = null;
+  function buildOfficialHeader(title, subtitle){
+    const now = new Date();
+    return `
+      <div class="doc-head">
+        <div class="doc-logo">📡</div>
+        <div class="doc-headtext">
+          <div class="doc-org">HIGHWAY-X — SMART ROAD MAINTENANCE SYSTEM</div>
+          <div class="doc-title">${title}</div>
+          ${subtitle ? `<div class="doc-sub">${subtitle}</div>` : ''}
+        </div>
+      </div>
+      <div class="doc-meta">ออกรายงานเมื่อ: ${now.toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'})} เวลา ${now.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})}</div>
+      <hr>`;
+  }
+  function buildOfficialFooter(){
+    return `
+      <div class="doc-sign">
+        <div class="doc-sign-box"><div class="doc-sign-line"></div>ผู้จัดทำรายงาน</div>
+        <div class="doc-sign-box"><div class="doc-sign-line"></div>ผู้ตรวจสอบ / อนุมัติ</div>
+      </div>`;
+  }
+  function openReport(pointId){
+    activeReportPointId = pointId;
+    currentReportType = 'point'; currentReportId = pointId;
+    const p = points.find(x=>x.id===pointId);
+    document.getElementById('report-title').textContent = '📄 Report — '+p.name;
+    const el = document.getElementById('report-body');
+    const photosHtml = (p.photos && p.photos.length) ? `
+      <div class="rep-item">
+        <div class="rep-photo-label">📷 รูปภาพจุดสำรวจ</div>
+        <div class="rep-thumbs">${p.photos.map(ph=>`<img src="${ph}">`).join('')}</div>
+      </div>` : '';
+    let logsHtml = '';
+    if(p.logs.length===0){ logsHtml = '<div class="empty-note">ยังไม่มีบันทึกงาน</div>'; }
+    else{
+      logsHtml = p.logs.map((l,i)=>{
+        const checkedItems = (l.checklist||[]).filter(c=>c.checked);
+        return `
+        <div class="log-item">
+          <div class="lhead"><span>${l.date}</span><span>${logStatusLabel[l.status]||''}</span></div>
+          <div class="lbody">${l.detail}</div>
+          <div class="lmeta">ทีมช่าง: ${l.worker} · ผู้แจ้ง: ${l.reporter||'-'}</div>
+          ${l.parts ? `<div class="lmeta">🔧 อุปกรณ์ที่เปลี่ยน/ซ่อม: ${l.parts}</div>` : ''}
+          ${l.issue ? `<div class="lmeta">⚠️ ปัญหาที่พบ: ${l.issue}</div>` : ''}
+          ${checkedItems.length ? `<div class="lmeta" style="margin-top:6px;"><b>✅ รายการที่ตรวจแล้ว:</b><br>${
+            checkedItems.map(c=>`• ${c.label}${(c.model||c.sn)?` — รุ่น: ${c.model||'-'} / S/N: ${c.sn||'-'}`:''}`).join('<br>')
+          }</div>` : ''}
+          ${l.photos.length ? `<div class="thumbs">${l.photos.map(ph=>`<img src="${ph}">`).join('')}</div>` : ''}
+          <button class="btn red small" style="margin-top:8px;" onclick="deletePointLog(${pointId},${i})">🗑️ ลบบันทึกนี้</button>
+        </div>
+      `;}).join('');
+    }
+    el.innerHTML = photosHtml + logsHtml;
+
+    // เตรียม HTML สำหรับพิมพ์แบบทางการ
+    let printBody = '';
+    if(p.logs.length===0){ printBody = '<p>ยังไม่มีบันทึกงาน</p>'; }
+    else{
+      p.logs.forEach(l=>{
+        const checkedItems = (l.checklist||[]).filter(c=>c.checked);
+        printBody += `<div class="rep-item">
+          <div class="rep-item-head"><b>${l.date}</b><span class="rep-badge ${l.status==='ok'?'rep-ok':'rep-pending'}">${logStatusLabel[l.status]||''}</span></div>
+          <div class="rep-text">${l.detail}</div>
+          <div class="rep-sub">ทีมช่าง: ${l.worker} · ผู้แจ้ง: ${l.reporter||'-'}</div>`;
+        if(l.parts) printBody += `<div class="rep-text">🔧 อุปกรณ์ที่เปลี่ยน/ซ่อม: ${l.parts}</div>`;
+        if(l.issue) printBody += `<div class="rep-text">⚠️ ปัญหาที่พบ: ${l.issue}</div>`;
+        if(checkedItems.length) printBody += `<div class="rep-text"><b>✅ รายการที่ตรวจแล้ว:</b><br>` + checkedItems.map(c=>`• ${c.label}${(c.model||c.sn)?` — รุ่น: ${c.model||'-'} / S/N: ${c.sn||'-'}`:''}`).join('<br>') + `</div>`;
+        if(l.photos.length) printBody += `<div class="rep-thumbs">` + l.photos.map(ph=>`<img src="${ph}">`).join('') + `</div>`;
+        printBody += `</div>`;
+      });
+    }
+    currentPrintTitle = 'Report - '+p.name;
+    currentPrintHtml = buildOfficialHeader('รายงานจุดสำรวจ / งาน MA', p.name+' · '+p.type) + photosHtml + printBody + buildOfficialFooter();
+    openModal('modal-report');
+  }
+  function printCurrentReport(){
+    printSection(currentPrintHtml, currentPrintTitle);
+  }
+
+  // ---- trips ----
+  let tripPointsBuffer = [];
+  let editingTripId = null;
+  function openAddTrip(){
+    editingTripId = null;
+    ['t-team','t-name','t-start'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('t-date').value = fmt(new Date());
+    document.getElementById('t-end-date').value = '';
+    tripPointsBuffer = [];
+    const sel = document.getElementById('t-point-select');
+    sel.innerHTML = points.length
+      ? points.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')
+      : `<option value="">ยังไม่มีจุดสำรวจ (ไปเพิ่มที่แท็บ งาน MA ก่อน)</option>`;
+    renderTripPointList();
+    document.getElementById('trip-modal-title').textContent = '🚗 สร้างแผนเดินทาง MA';
+    document.getElementById('trip-save-btn').textContent = 'บันทึกแผนเดินทาง';
+    openModal('modal-trip');
+  }
+  function openEditTrip(id){
+    const t = trips.find(x=>x.id===id);
+    if(!t) return;
+    editingTripId = id;
+    document.getElementById('t-team').value = t.team;
+    document.getElementById('t-date').value = t.date;
+    document.getElementById('t-end-date').value = t.endDate||'';
+    document.getElementById('t-name').value = t.name;
+    document.getElementById('t-start').value = t.start||'';
+    tripPointsBuffer = [...(t.pointIds||[])];
+    const sel = document.getElementById('t-point-select');
+    sel.innerHTML = points.length
+      ? points.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')
+      : `<option value="">ยังไม่มีจุดสำรวจ (ไปเพิ่มที่แท็บ งาน MA ก่อน)</option>`;
+    renderTripPointList();
+    document.getElementById('trip-modal-title').textContent = '✏️ แก้ไขแผนเดินทาง';
+    document.getElementById('trip-save-btn').textContent = 'บันทึกการแก้ไข';
+    openModal('modal-trip');
+  }
+  function addPointToTrip(){
+    const id = parseInt(document.getElementById('t-point-select').value);
+    if(!id) return;
+    if(!tripPointsBuffer.includes(id)) tripPointsBuffer.push(id);
+    renderTripPointList();
+  }
+  function addAllPointsToTrip(){
+    tripPointsBuffer = points.map(p=>p.id);
+    renderTripPointList();
+  }
+  function removePointFromTrip(id){
+    tripPointsBuffer = tripPointsBuffer.filter(x=>x!==id);
+    renderTripPointList();
+  }
+  function renderTripPointList(){
+    const el = document.getElementById('t-point-list');
+    if(tripPointsBuffer.length===0){ el.innerHTML = '<div class="empty-note" style="padding:14px 0;">ยังไม่มีจุดสำรวจ</div>'; return; }
+    el.innerHTML = tripPointsBuffer.map((id,i)=>{
+      const p = points.find(x=>x.id===id);
+      if(!p) return '';
+      return `<div class="equip-item"><div><b>${i+1}. ${p.name}</b><div class="sn">${p.type}</div></div>
+        <button class="btn red small" onclick="removePointFromTrip(${id})">ลบ</button></div>`;
+    }).join('');
+  }
+  function saveTrip(){
+    const team = document.getElementById('t-team').value.trim();
+    const date = document.getElementById('t-date').value;
+    const endDate = document.getElementById('t-end-date').value || '';
+    const name = document.getElementById('t-name').value.trim();
+    const start = document.getElementById('t-start').value.trim();
+    if(!team || !name){ alert('กรุณากรอกชื่อทีมช่างและชื่อแผนเดินทาง'); return; }
+    if(endDate && endDate < date){ alert('วันที่สิ้นสุดต้องไม่มาก่อนวันที่เริ่มงาน'); return; }
+    if(editingTripId){
+      const idx = trips.findIndex(t=>t.id===editingTripId);
+      trips[idx] = { ...trips[idx], team, date, endDate, name, start, pointIds:[...tripPointsBuffer] };
+    } else {
+      trips.unshift({ id: Date.now(), team, date, endDate, name, start, pointIds:[...tripPointsBuffer], status:'planned', completed:{} });
+    }
+    LS.set('hwx_trips', trips);
+    closeModal('modal-trip');
+    renderAll();
+  }
+  function deleteTrip(id){
+    trips = trips.filter(t=>t.id!==id);
+    LS.set('hwx_trips', trips);
+    renderAll();
+  }
+
+  // ---- ซ่อมบำรุง (แยกต่างหาก) ----
+  let editingRepairId = null;
+  function openAddRepair(){
+    editingRepairId = null;
+    activeTripId = null; activePointForRepair = null;
+    repairBeforeBuffer = []; repairAfterBuffer = [];
+    repairFileBuffer = [];
+    document.getElementById('r-thumbs-before').innerHTML = '';
+    document.getElementById('r-thumbs-after').innerHTML = '';
+    document.getElementById('r-filenames').innerHTML = '';
+    ['r-name','r-model','r-sn','r-reporter','r-worker','r-detail','r-maplink','r-otherlink'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('r-type').selectedIndex = 0;
+    document.getElementById('r-status').value = 'pending';
+    document.getElementById('repair-modal-title').textContent = '🧰 แจ้งซ่อมบำรุง';
+    document.getElementById('repair-save-btn').textContent = 'บันทึกรายการซ่อมบำรุง';
+    openModal('modal-repair');
+  }
+  // เปิดฟอร์มซ่อมบำรุง โดยเชื่อมกับจุดในแผนเดินทาง (tripId/pointId) ถ้ามี
+  function openRepairForTripPoint(tripId, pointId){
+    openAddRepair();
+    activeTripId = tripId;
+    activePointForRepair = pointId;
+    const p = points.find(x=>x.id===pointId);
+    if(p){
+      document.getElementById('r-name').value = p.name;
+      if(['กล้องจับความเร็ว','ทางข้ามอัจฉริยะ','CCTV','อื่นๆ'].includes(p.type)) document.getElementById('r-type').value = p.type;
+      document.getElementById('r-model').value = p.model||'';
+      document.getElementById('r-sn').value = p.sn||'';
+    }
+  }
+  function openEditRepair(id){
+    const r = repairs.find(x=>x.id===id);
+    if(!r) return;
+    editingRepairId = id;
+    repairBeforeBuffer = [...(r.beforePhotos||[])];
+    repairAfterBuffer = [...(r.afterPhotos||[])];
+    repairFileBuffer = [...(r.files||[])];
+    renderRepairFiles();
+    document.getElementById('r-name').value = r.name;
+    document.getElementById('r-type').value = r.type;
+    document.getElementById('r-model').value = r.model;
+    document.getElementById('r-sn').value = r.sn;
+    document.getElementById('r-reporter').value = r.reporter;
+    document.getElementById('r-worker').value = r.worker;
+    document.getElementById('r-detail').value = r.detail;
+    document.getElementById('r-maplink').value = r.mapLink||'';
+    document.getElementById('r-otherlink').value = r.otherLink||'';
+    document.getElementById('r-status').value = r.status;
+    document.getElementById('repair-modal-title').textContent = '✏️ แก้ไขรายการซ่อมบำรุง';
+    document.getElementById('repair-save-btn').textContent = 'บันทึกการแก้ไข';
+    openModal('modal-repair');
+  }
+  document.getElementById('r-file-before').addEventListener('change', function(e){
+    [...e.target.files].forEach(file=>{
+      const reader = new FileReader();
+      reader.onload = ev=>{ repairBeforeBuffer.push(ev.target.result); renderRepairFiles(); };
+      reader.readAsDataURL(file);
+    });
+  });
+  document.getElementById('r-file-after').addEventListener('change', function(e){
+    [...e.target.files].forEach(file=>{
+      const reader = new FileReader();
+      reader.onload = ev=>{ repairAfterBuffer.push(ev.target.result); renderRepairFiles(); };
+      reader.readAsDataURL(file);
+    });
+  });
+  document.getElementById('r-file').addEventListener('change', function(e){
+    [...e.target.files].forEach(file=>{
+      const isImage = file.type.startsWith('image/');
+      const reader = new FileReader();
+      reader.onload = ev=>{
+        repairFileBuffer.push({ name:file.name, data:ev.target.result, isImage });
+        renderRepairFiles();
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+  function renderRepairFiles(){
+    document.getElementById('r-thumbs-before').innerHTML = repairBeforeBuffer.map((s,i)=>
+      `<div class="thumb-wrap"><img src="${s}"><span class="thumb-del" onclick="removeRepairPhoto('before',${i})">✕</span></div>`
+    ).join('');
+    document.getElementById('r-thumbs-after').innerHTML = repairAfterBuffer.map((s,i)=>
+      `<div class="thumb-wrap"><img src="${s}"><span class="thumb-del" onclick="removeRepairPhoto('after',${i})">✕</span></div>`
+    ).join('');
+    document.getElementById('r-filenames').innerHTML = repairFileBuffer
+      .filter(f=>!f.isImage).map((f,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;">📎 ${f.name} <button class="btn red small" onclick="removeRepairFile(${i})">ลบ</button></div>`).join('');
+  }
+  function removeRepairPhoto(kind, i){
+    if(kind==='before') repairBeforeBuffer.splice(i,1);
+    else repairAfterBuffer.splice(i,1);
+    renderRepairFiles();
+  }
+  function removeRepairFile(i){
+    const nonImages = repairFileBuffer.filter(f=>!f.isImage);
+    const target = nonImages[i];
+    repairFileBuffer = repairFileBuffer.filter(f=>f!==target);
+    renderRepairFiles();
+  }
+  function saveRepair(){
+    const name = document.getElementById('r-name').value.trim();
+    const worker = document.getElementById('r-worker').value.trim();
+    const detail = document.getElementById('r-detail').value.trim();
+    if(!name){ alert('กรุณากรอกอย่างน้อยชื่ออุปกรณ์ / จุดที่ซ่อม'); return; }
+    const today = fmt(new Date());
+    const data = {
+      name, type: document.getElementById('r-type').value,
+      model: document.getElementById('r-model').value.trim(),
+      sn: document.getElementById('r-sn').value.trim(),
+      reporter: document.getElementById('r-reporter').value.trim(),
+      worker, detail,
+      status: document.getElementById('r-status').value,
+      mapLink: document.getElementById('r-maplink').value.trim(),
+      otherLink: document.getElementById('r-otherlink').value.trim(),
+      beforePhotos: [...repairBeforeBuffer],
+      afterPhotos: [...repairAfterBuffer],
+      files: [...repairFileBuffer],
+      tripId: activeTripId, pointId: activePointForRepair
+    };
+    let repairId;
+    if(editingRepairId){
+      const idx = repairs.findIndex(r=>r.id===editingRepairId);
+      repairs[idx] = { ...repairs[idx], ...data };
+      repairId = editingRepairId;
+    } else {
+      repairId = Date.now();
+      repairs.unshift({ id: repairId, ...data, date: today });
+    }
+    LS.set('hwx_repairs', repairs);
+    // บันทึกลงปฏิทินอัตโนมัติ เพื่อย้อนดูภายหลังได้ (เก็บเป็นลิงก์ กดดูรายละเอียดได้)
+    if(!calendarNotes[today]) calendarNotes[today] = [];
+    const noteText = `🧰 ซ่อมบำรุง: ${name} (${statusLabel[data.status]})`;
+    const alreadyExists = calendarNotes[today].some(n=> (typeof n==='object' && n.refId===repairId) );
+    if(!alreadyExists) calendarNotes[today].push({ text: noteText, type:'repair', refId: repairId });
+    LS.set('hwx_calendar', calendarNotes);
+    closeModal('modal-repair');
+    activeTripId = null; activePointForRepair = null;
+    renderAll();
+    alert(editingRepairId ? 'บันทึกการแก้ไขเรียบร้อย' : 'บันทึกรายการซ่อมบำรุงเรียบร้อย (บันทึกลงปฏิทินแล้ว)');
+  }
+  function deleteRepair(id){
+    if(!confirm('ลบรายการนี้?')) return;
+    repairs = repairs.filter(r=>r.id!==id);
+    LS.set('hwx_repairs', repairs);
+    renderAll();
+  }
+  const statusLabel = {pending:'รอดำเนินการ', progress:'กำลังซ่อม', done:'เสร็จสิ้น'};
+  const statusClass = {pending:'overdue', progress:'type', done:'ok'};
+  function renderRepairs(){
+    const el = document.getElementById('repair-list');
+    if(repairs.length===0){ el.innerHTML = '<div class="empty-note">ยังไม่มีรายการซ่อมบำรุง</div>'; return; }
+    el.innerHTML = repairs.map(r=>`
+      <div class="card">
+        <div class="point-head">
+          <div>
+            <div class="point-title">🧰 ${r.name}</div>
+            <div class="tagrow">
+              <span class="tag type">${r.type}</span>
+              <span class="tag ${statusClass[r.status]}">${statusLabel[r.status]}</span>
+            </div>
+          </div>
+        </div>
+        <div class="meta">
+          รุ่น: ${r.model||'-'} · S/N: ${r.sn||'-'}<br>
+          ผู้แจ้ง: ${r.reporter||'-'} · ผู้ออกหน้างาน: ${r.worker}<br>
+          ${r.detail}<br>${r.date}
+        </div>
+        ${(r.beforePhotos&&r.beforePhotos.length) ? `<div class="meta" style="margin-top:8px;font-weight:700;">📷 ก่อนทำ (Before)</div><div class="thumbs">${r.beforePhotos.map(ph=>`<img src="${ph}">`).join('')}</div>` : ''}
+        ${(r.afterPhotos&&r.afterPhotos.length) ? `<div class="meta" style="margin-top:8px;font-weight:700;">📷 หลังทำ (After)</div><div class="thumbs">${r.afterPhotos.map(ph=>`<img src="${ph}">`).join('')}</div>` : ''}
+        ${(r.files||[]).filter(f=>f.isImage).length ? `<div class="thumbs">${r.files.filter(f=>f.isImage).map(f=>`<img src="${f.data}">`).join('')}</div>` : ''}
+        ${(r.files||[]).filter(f=>!f.isImage).map(f=>`<div class="meta">📎 ${f.name}</div>`).join('')}
+        <div class="btnrow" style="margin-top:8px;">
+          ${r.mapLink ? `<a class="btn ghost small" href="${r.mapLink}" target="_blank">🗺️ ลิงก์แผนที่</a>` : ''}
+          ${r.otherLink ? `<a class="btn ghost small" href="${r.otherLink}" target="_blank">🔗 ลิงก์อื่นๆ</a>` : ''}
+        </div>
+        <div class="divider"></div>
+        <div class="btnrow">
+          <button class="btn ghost small" onclick="openEditRepair(${r.id})">✏️ แก้ไข</button>
+          <button class="btn red small" onclick="deleteRepair(${r.id})">ลบรายการ</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ---- renderers ----
+  function renderMAFilters(){
+    const tripSel = document.getElementById('ma-filter-trip');
+    const curTrip = tripSel.value;
+    tripSel.innerHTML = '<option value="">— ทุกแผนเดินทาง (แสดงทุกจุด) —</option>' +
+      trips.map(t=>`<option value="${t.id}">${t.name} (${t.date})</option>`).join('');
+    tripSel.value = curTrip;
+
+    const typeSel = document.getElementById('ma-filter-type');
+    const curType = typeSel.value;
+    const types = [...new Set(points.map(p=>p.type))];
+    typeSel.innerHTML = '<option value="">ทุกประเภท</option>' +
+      types.map(t=>`<option value="${t}">${t}</option>`).join('');
+    typeSel.value = curType;
+  }
+  function renderMA(){
+    renderMAFilters();
+    const tripFilter = document.getElementById('ma-filter-trip').value;
+    const typeFilter = document.getElementById('ma-filter-type').value;
+    let list = points;
+    if(tripFilter){
+      const t = trips.find(x=>x.id===parseInt(tripFilter));
+      const ids = t ? (t.pointIds||[]) : [];
+      list = list.filter(p=>ids.includes(p.id));
+    }
+    if(typeFilter) list = list.filter(p=>p.type===typeFilter);
+
+    const el = document.getElementById('ma-list');
+    if(points.length===0){ el.innerHTML = '<div class="card"><div class="empty-note">ยังไม่มีจุดสำรวจ กด "+ จุด" เพื่อเพิ่ม</div></div>'; return; }
+    if(list.length===0){ el.innerHTML = '<div class="card"><div class="empty-note">ไม่พบจุดที่ตรงกับตัวกรอง</div></div>'; return; }
+    el.innerHTML = list.map(p=>{
+      const st = pointStatus(p);
+      const lastLog = p.logs[0];
+      const linkedSite = sites.find(s=>parseInt(s.linkedPointId)===p.id);
+      return `
+      <div class="card" id="ma-point-${p.id}">
+        <div class="point-head">
+          <div>
+            <div class="point-title">📍 ${p.name}</div>
+            <div class="tagrow">
+              <span class="tag type">${p.type}</span>
+              <span class="tag ${st.cls}">${st.label}</span>
+            </div>
+          </div>
+          <div class="btnrow">
+            <button class="btn ghost small" onclick="openReport(${p.id})">Report</button>
+          </div>
+        </div>
+        <div class="meta">รุ่น: ${p.model||'-'} · S/N: ${p.sn||'-'} · รอบ MA ทุก ${p.interval} เดือน</div>
+        ${p.lat && p.lng ? `<a class="btn ghost small" style="margin-top:8px;display:inline-flex;" href="https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}" target="_blank">🧭 นำทางไปจุดนี้</a>` : ''}
+        ${p.mapLink ? `<a class="btn ghost small" style="margin-top:8px;margin-left:6px;display:inline-flex;" href="${p.mapLink}" target="_blank">🗺️ ลิงก์แผนที่</a>` : ''}
+        ${p.otherLink ? `<a class="btn ghost small" style="margin-top:8px;margin-left:6px;display:inline-flex;" href="${p.otherLink}" target="_blank">🔗 ลิงก์อื่นๆ</a>` : ''}
+        ${linkedSite ? `
+          <div class="log-item" style="background:var(--purple-bg);">
+            <div class="lhead" style="color:var(--purple);"><span>🔗 เชื่อมกับคลังอุปกรณ์: ${linkedSite.name}</span></div>
+            ${linkedSite.devices.length ? linkedSite.devices.map(d=>`
+              <div class="lmeta">📦 ${d.name} — รุ่น: ${d.model||'-'} · S/N: ${d.sn||'-'} · ${d.status==='abnormal'?'❌ ไม่ปกติ':'✅ ปกติ'}</div>
+            `).join('') : `<div class="lmeta">ยังไม่มีอุปกรณ์ในสถานที่นี้</div>`}
+            <div class="btnrow" style="margin-top:8px;">
+              <button class="btn ghost small" onclick="switchView('inventory')">📦 ไปที่คลังอุปกรณ์</button>
+              <button class="btn ghost small" onclick="quickLinkSite(${p.id})">🔄 เปลี่ยนการเชื่อมโยง</button>
+              <button class="btn red small" onclick="unlinkSite(${p.id})">✕ ยกเลิกการเชื่อมโยง</button>
+            </div>
+          </div>
+        ` : `<button class="btn ghost small" style="margin-top:8px;" onclick="quickLinkSite(${p.id})">🔗 เชื่อมกับคลังอุปกรณ์</button>`}
+        ${lastLog ? `
+          <div class="log-item">
+            <div class="lhead"><span>${lastLog.date}</span><span>${logStatusLabel[lastLog.status]||''}</span></div>
+            <div class="lbody">${lastLog.detail}</div>
+            <div class="lmeta">ผู้ออกหน้างาน: ${lastLog.worker}</div>
+            ${lastLog.photos.length ? `<div class="thumbs">${lastLog.photos.slice(0,3).map(ph=>`<img src="${ph}">`).join('')}</div>` : ''}
+          </div>` : `<div class="log-empty">ยังไม่มีบันทึกงาน</div>`}
+        <div class="divider"></div>
+        <div class="btnrow">
+          <button class="btn solid small" onclick="openLogModal(${p.id})">🛠️ บันทึกงาน MA</button>
+          <button class="btn ghost small" onclick="openEditPoint(${p.id})">✏️ แก้ไข</button>
+          <button class="btn red small" onclick="deletePoint(${p.id})">ลบจุด</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderTrips(){
+    const el = document.getElementById('trip-list');
+    // แผนที่ปิดงานแล้ว (status = done) หรือทำครบ 100% จะถูกซ่อนออกจากหน้านี้ ไปดูย้อนหลังได้ที่ปฏิทินแทน
+    const activeTrips = trips.filter(t=>{
+      if(t.status==='done') return false;
+      const pts = (t.pointIds||[]).map(id=>points.find(p=>p.id===id)).filter(Boolean);
+      const completed = t.completed || {};
+      const allDone = pts.length>0 && pts.every(p=>completed[p.id]);
+      return !allDone;
+    });
+    if(trips.length===0){ el.innerHTML = '<div class="empty-note">ยังไม่มีแผนเดินทาง</div>'; return; }
+    if(activeTrips.length===0){ el.innerHTML = '<div class="empty-note">🎉 ทำครบทุกแผนแล้ว! ดูประวัติย้อนหลังได้ที่แท็บ 📅 ปฏิทิน</div>'; return; }
+    el.innerHTML = activeTrips.map(t=>{
+      const pts = (t.pointIds||[]).map(id=>points.find(p=>p.id===id)).filter(Boolean);
+      const completed = t.completed || {};
+      const doneCount = pts.filter(p=>completed[p.id]).length;
+      const pct = pts.length ? Math.round(doneCount/pts.length*100) : 0;
+      const statusInfo = {
+        planned: {label:'🗓️ วางแผน', cls:'type'},
+        ongoing: {label:'🔵 กำลังเดินทาง', cls:'overdue'},
+        done: {label:'✅ เสร็จสิ้น', cls:'ok'}
+      }[t.status] || {label:'🗓️ วางแผน', cls:'type'};
+
+      const waypoints = pts.filter(p=>p.lat && p.lng).map(p=>`${p.lat},${p.lng}`);
+      const routeUrl = waypoints.length
+        ? `https://www.google.com/maps/dir/?api=1${t.start?`&origin=${encodeURIComponent(t.start)}`:''}&destination=${waypoints[waypoints.length-1]}${waypoints.length>1?`&waypoints=${waypoints.slice(0,-1).join('|')}`:''}&travelmode=driving`
+        : null;
+      const tripRepairs = repairs.filter(r=>r.tripId===t.id);
+
+      return `
+      <div class="card">
+        <div class="point-head">
+          <div>
+            <div class="point-title">${t.name}</div>
+            <div class="meta">👥 ${t.team} · 📅 ${t.endDate && t.endDate!==t.date ? `${t.date} ถึง ${t.endDate}` : t.date}<br>📍 เริ่มจาก: ${t.start||'-'}</div>
+            <div class="tagrow">
+              <span class="tag ${statusInfo.cls}">${statusInfo.label}</span>
+              ${pts.length ? `<span class="tag type">${doneCount}/${pts.length} (${pct}%)</span>` : ''}
+              ${tripRepairs.length ? `<span class="tag ok">🧰 ${tripRepairs.length} งานซ่อมบำรุง</span>` : ''}
+            </div>
+          </div>
+          <div class="btnrow" style="flex-direction:column;align-items:stretch;">
+            ${t.status==='planned' ? `<button class="btn ghost small" onclick="setTripStatus(${t.id},'ongoing')">▶️ เริ่ม</button>` : ''}
+            ${t.status==='ongoing' ? `<button class="btn ghost small" onclick="confirmCloseTrip(${t.id})" style="background:var(--green-bg);color:var(--green);border-color:var(--green);">✅ ปิดงาน</button>` : ''}
+            ${t.status==='done' ? `<button class="btn ghost small" onclick="setTripStatus(${t.id},'ongoing')">↩️ เปิดใหม่</button>` : ''}
+            <button class="btn ghost small" onclick="openTripReport(${t.id})">📄 Report</button>
+            <button class="btn ghost small" onclick="openEditTrip(${t.id})">✏️ แก้ไข</button>
+          </div>
+        </div>
+        <div class="btnrow" style="margin-top:8px;">
+          <button class="btn solid small" onclick="openRepairForTripPoint(${t.id}, null)">🧰 กรอกข้อมูลงานซ่อมบำรุง (เพื่อจบงาน)</button>
+        </div>
+        ${tripRepairs.length ? `<div class="divider"></div>` + tripRepairs.map(r=>`
+          <div class="rep-item">
+            <div class="rep-item-head"><b>🧰 ${r.name}</b><span class="rep-badge ${statusClass[r.status]==='ok'?'rep-ok':'rep-pending'}">${statusLabel[r.status]}</span></div>
+            <div class="rep-sub">${r.detail}</div>
+            <div class="btnrow" style="margin-top:8px;">
+              <button class="btn ghost small" onclick="openRepairReport(${r.id})">📄 ดูรายละเอียด</button>
+              <button class="btn ghost small" onclick="openEditRepair(${r.id})">✏️ แก้ไข</button>
+            </div>
+          </div>
+        `).join('') : ''}
+        ${pts.length ? renderRiderQueue(t, pts, completed) : ''}
+        ${routeUrl ? `<a class="btn ghost block" style="margin-top:4px;" href="${routeUrl}" target="_blank">🗺️ Google Maps Route ทั้งสาย</a>` : ''}
+        <div class="divider"></div>
+        <button class="btn red small" onclick="deleteTrip(${t.id})">ลบแผน</button>
+      </div>
+    `;}).join('');
+  }
+  function renderRiderQueue(t, pts, completed){
+    const doneCount = pts.filter(p=>completed[p.id]).length;
+    const pct = pts.length ? Math.round(doneCount/pts.length*100) : 0;
+    const remaining = pts.filter(p=>!completed[p.id]);
+    const currentIdx = pts.findIndex(p=>!completed[p.id]);
+
+    let hero = '';
+    if(currentIdx===-1){
+      hero = `<div class="rider-hero rider-done">🎉 ถึงครบทุกจุดแล้ว! งานนี้เสร็จสมบูรณ์ 100%</div>`;
+    } else {
+      const cur = pts[currentIdx];
+      hero = `
+      <div class="rider-hero">
+        <div class="rider-hero-label">📍 จุดถัดไป (STOP ${currentIdx+1}/${pts.length})</div>
+        <div class="rider-hero-name">${cur.name}</div>
+        <div class="rider-hero-type">${cur.type}</div>
+        <div class="btnrow" style="margin-top:10px;">
+          ${cur.lat && cur.lng ? `<a class="btn solid" style="flex:1;" href="https://www.google.com/maps/dir/?api=1&destination=${cur.lat},${cur.lng}" target="_blank">🧭 นำทางไปจุดนี้</a>` : `<span class="empty-note" style="flex:1;padding:8px 0;">ยังไม่มีพิกัด</span>`}
+        </div>
+        <div class="btnrow" style="margin-top:8px;">
+          <button class="btn ghost small" onclick="openLogModal(${cur.id})">📋 บันทึกงาน</button>
+          <button class="btn ghost small" onclick="openRepairForTripPoint(${t.id},${cur.id})">🧰 ซ่อมบำรุง</button>
+          <button class="btn ghost small" onclick="openReport(${cur.id})">📄 Report</button>
+        </div>
+        <div class="btnrow" style="margin-top:8px;">
+          <button class="btn small" style="flex:1;background:var(--green);color:#fff;border-color:var(--green);" onclick="openCompleteStop(${t.id},${cur.id})">✅ ถึงแล้ว ไปจุดต่อไป</button>
+        </div>
+      </div>`;
+    }
+
+    const progressBar = `<div class="rider-progress"><div class="rider-progress-fill" style="width:${pct}%;"></div></div>
+      <div class="rider-progress-label">${doneCount}/${pts.length} จุด · ${pct}%</div>`;
+
+    // จุดที่เสร็จแล้วจะถูกซ่อนออกจากคิว เหลือแค่จุดที่ยังไม่เสร็จ
+    const queue = remaining.map((p)=>{
+      const originalIdx = pts.findIndex(x=>x.id===p.id);
+      const state = originalIdx===currentIdx ? 'current' : 'upcoming';
+      return `
+      <div class="rider-step ${state}">
+        <div class="rider-dot">${originalIdx+1}</div>
+        <div class="rider-step-info">
+          <div class="rider-step-name">${p.name}</div>
+          <div class="rider-step-type">${p.type}</div>
+        </div>
+      </div>`;
+    }).join('');
+
+    const doneNote = doneCount>0 ? `<div class="empty-note" style="padding:8px 0;">✅ เสร็จแล้ว ${doneCount} จุด (ซ่อนจากคิว)</div>` : '';
+
+    return `<div class="divider"></div>${progressBar}${hero}<div class="rider-queue">${queue}</div>${doneNote}`;
+  }
+
+  function confirmCloseTrip(tripId){
+    const tripRepairs = repairs.filter(r=>r.tripId===tripId);
+    if(tripRepairs.length===0){
+      const goFill = confirm('ยังไม่ได้กรอกข้อมูลงานซ่อมบำรุงสำหรับแผนนี้เลย\n\nกด "ตกลง" เพื่อกรอกข้อมูลก่อนปิดงาน\nกด "ยกเลิก" เพื่อปิดงานโดยไม่กรอกข้อมูล');
+      if(goFill){ openRepairForTripPoint(tripId, null); return; }
+    }
+    setTripStatus(tripId, 'done');
+  }
+  function setTripStatus(id, status){
+    const t = trips.find(x=>x.id===id);
+    t.status = status;
+    LS.set('hwx_trips', trips);
+    if(status==='done' && !t.calendarLogged){
+      const today = fmt(new Date());
+      if(!calendarNotes[today]) calendarNotes[today] = [];
+      const pts = (t.pointIds||[]).map(id=>points.find(p=>p.id===id)).filter(Boolean);
+      calendarNotes[today].push({ text: `🚗 แผนเดินทาง "${t.name}" ปิดงานแล้ว (${pts.length} จุด)`, type:'trip', refId: t.id });
+      LS.set('hwx_calendar', calendarNotes);
+      t.calendarLogged = true;
+      LS.set('hwx_trips', trips);
+    }
+    renderAll();
+  }
+
+  // ---- ยืนยันจุดเสร็จสิ้น พร้อมแนบรูปได้หลายรูป ----
+  let completeStopTripId = null, completeStopPointId = null, completeStopPhotos = [];
+  function renderCsThumbs(){
+    document.getElementById('cs-thumbs').innerHTML = completeStopPhotos.map((s,i)=>
+      `<div class="thumb-wrap"><img src="${s}"><span class="thumb-del" onclick="removeCsPhoto(${i})">✕</span></div>`
+    ).join('');
+  }
+  function removeCsPhoto(i){
+    completeStopPhotos.splice(i,1);
+    renderCsThumbs();
+  }
+  document.getElementById('cs-file').addEventListener('change', function(e){
+    [...e.target.files].forEach(file=>{
+      const reader = new FileReader();
+      reader.onload = ev=>{
+        completeStopPhotos.push(ev.target.result);
+        renderCsThumbs();
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+  function openCompleteStop(tripId, pointId){
+    completeStopTripId = tripId;
+    completeStopPointId = pointId;
+    completeStopPhotos = [];
+    document.getElementById('cs-thumbs').innerHTML = '';
+    document.getElementById('cs-note').value = '';
+    openModal('modal-complete-stop');
+  }
+  function confirmCompleteStop(){
+    const t = trips.find(x=>x.id===completeStopTripId);
+    if(!t.completed) t.completed = {};
+    t.completed[completeStopPointId] = {
+      done:true, date: fmt(new Date()),
+      note: document.getElementById('cs-note').value.trim(),
+      photos: [...completeStopPhotos]
+    };
+    LS.set('hwx_trips', trips);
+    closeModal('modal-complete-stop');
+
+    // ถ้าครบทุกจุดแล้ว (100%) บันทึกลงปฏิทินอัตโนมัติ
+    const pts = (t.pointIds||[]).map(id=>points.find(p=>p.id===id)).filter(Boolean);
+    const allDone = pts.length>0 && pts.every(p=>t.completed[p.id]);
+    if(allDone && !t.calendarLogged){
+      const today = fmt(new Date());
+      if(!calendarNotes[today]) calendarNotes[today] = [];
+      calendarNotes[today].push({ text: `🚗 แผนเดินทาง "${t.name}" เสร็จสิ้นครบ 100% (${pts.length} จุด)`, type:'trip', refId: t.id });
+      LS.set('hwx_calendar', calendarNotes);
+      t.calendarLogged = true;
+      LS.set('hwx_trips', trips);
+      setTimeout(()=>alert('🎉 ทำครบทุกจุดแล้ว! บันทึกลงปฏิทินเรียบร้อย'), 100);
+    }
+    renderAll();
+  }
+  function toggleTripPointDone(tripId, pointId){
+    const t = trips.find(x=>x.id===tripId);
+    if(!t.completed) t.completed = {};
+    if(t.completed[pointId]) delete t.completed[pointId];
+    else openCompleteStop(tripId, pointId);
+    LS.set('hwx_trips', trips);
+    renderAll();
+  }
+  function openTripReport(tripId){
+    const t = trips.find(x=>x.id===tripId);
+    const pts = (t.pointIds||[]).map(id=>points.find(p=>p.id===id)).filter(Boolean);
+    const completed = t.completed || {};
+    let body = '', printBody = '';
+    pts.forEach((p,i)=>{
+      const c = completed[p.id];
+      let inner = `<div class="rep-item-head"><b>${i+1}. ${p.name}</b><span class="rep-badge ${c?'rep-ok':'rep-pending'}">${c?'✅ เสร็จ ('+c.date+')':'⬜ ยังไม่เสร็จ'}</span></div>
+        <div class="rep-sub">${p.type}</div>`;
+      if(c && c.note) inner += `<div class="rep-text">📝 ${c.note}</div>`;
+      if(c && c.photos && c.photos.length) inner += `<div class="rep-thumbs">${c.photos.map(ph=>`<img src="${ph}">`).join('')}</div>`;
+      if(p.logs && p.logs.length){
+        const l = p.logs[0];
+        inner += `<div class="rep-text" style="margin-top:6px;">บันทึกล่าสุด (${l.date}): ${l.detail}<br>ทีมช่าง: ${l.worker}</div>`;
+      }
+      body += `<div class="rep-item" style="cursor:pointer;" onclick="openReport(${p.id})">${inner}<div class="rep-text" style="color:var(--blue);margin-top:6px;">ดูรายละเอียดจุดนี้ ›</div></div>`;
+      printBody += `<div class="rep-item">${inner}</div>`;
+    });
+    // รวมข้อมูลงานซ่อมบำรุงที่เชื่อมกับแผนเดินทางนี้เข้าในรายงานด้วย
+    const tripRepairs = repairs.filter(r=>r.tripId===tripId);
+    if(tripRepairs.length){
+      body += `<div class="rep-photo-label" style="font-size:13px;margin-top:14px;">🧰 งานซ่อมบำรุงที่เกี่ยวข้อง</div>`;
+      printBody += `<div class="rep-photo-label" style="font-size:13px;margin-top:14px;">🧰 งานซ่อมบำรุงที่เกี่ยวข้อง</div>`;
+      tripRepairs.forEach(r=>{
+        let rInner = `<div class="rep-item-head"><b>${r.name}</b><span class="rep-badge ${statusClass[r.status]==='ok'?'rep-ok':'rep-pending'}">${statusLabel[r.status]}</span></div>
+          <div class="rep-sub">${r.type} · รุ่น: ${r.model||'-'} · S/N: ${r.sn||'-'}</div>
+          <div class="rep-text">ผู้แจ้ง: ${r.reporter||'-'} · ผู้ออกหน้างาน: ${r.worker}</div>
+          <div class="rep-text">${r.detail}</div>
+          <div class="rep-sub">วันที่: ${r.date}</div>`;
+        if(r.mapLink) rInner += `<div class="rep-text">🗺️ ลิงก์แผนที่: <a href="${r.mapLink}" target="_blank">${r.mapLink}</a></div>`;
+        if(r.otherLink) rInner += `<div class="rep-text">🔗 ลิงก์อื่นๆ: <a href="${r.otherLink}" target="_blank">${r.otherLink}</a></div>`;
+        if(r.beforePhotos && r.beforePhotos.length) rInner += `<div class="rep-photo-label">📷 ก่อนทำ (Before)</div><div class="rep-thumbs">${r.beforePhotos.map(ph=>`<img src="${ph}">`).join('')}</div>`;
+        if(r.afterPhotos && r.afterPhotos.length) rInner += `<div class="rep-photo-label">📷 หลังทำ (After)</div><div class="rep-thumbs">${r.afterPhotos.map(ph=>`<img src="${ph}">`).join('')}</div>`;
+        body += `<div class="rep-item" style="cursor:pointer;" onclick="openRepairReport(${r.id})">${rInner}<div class="rep-text" style="color:var(--blue);margin-top:6px;">ดูรายละเอียด ›</div></div>`;
+        printBody += `<div class="rep-item">${rInner}</div>`;
+      });
+    }
+    document.getElementById('report-title').textContent = '📄 Report — '+t.name;
+    document.getElementById('report-body').innerHTML = body || '<div class="empty-note">ยังไม่มีจุดในแผนนี้</div>';
+    currentPrintTitle = t.name;
+    currentReportType = 'trip'; currentReportId = tripId;
+    currentPrintHtml = buildOfficialHeader('รายงานแผนเดินทาง MA', `${t.name} · ทีม: ${t.team} · วันที่: ${t.date} · เริ่มจาก: ${t.start||'-'}`) + printBody + buildOfficialFooter();
+    openModal('modal-report');
+  }
+  function openRepairReport(repairId){
+    const r = repairs.find(x=>x.id===repairId);
+    if(!r) return;
+    let body = `<div class="rep-item">
+      <div class="rep-item-head"><b>${r.name}</b><span class="rep-badge ${statusClass[r.status]==='ok'?'rep-ok':'rep-pending'}">${statusLabel[r.status]}</span></div>
+      <div class="rep-sub">${r.type} · รุ่น: ${r.model||'-'} · S/N: ${r.sn||'-'}</div>
+      <div class="rep-text">ผู้แจ้ง: ${r.reporter||'-'} · ผู้ออกหน้างาน: ${r.worker}</div>
+      <div class="rep-text">${r.detail}</div>
+      <div class="rep-sub">วันที่: ${r.date}</div>
+      ${r.mapLink ? `<div class="rep-text">🗺️ ลิงก์แผนที่: <a href="${r.mapLink}" target="_blank">${r.mapLink}</a></div>` : ''}
+      ${r.otherLink ? `<div class="rep-text">🔗 ลิงก์อื่นๆ: <a href="${r.otherLink}" target="_blank">${r.otherLink}</a></div>` : ''}
+      ${(r.beforePhotos&&r.beforePhotos.length) ? `<div class="rep-photo-label">📷 ก่อนทำ (Before)</div><div class="rep-thumbs">${r.beforePhotos.map(ph=>`<img src="${ph}">`).join('')}</div>` : ''}
+      ${(r.afterPhotos&&r.afterPhotos.length) ? `<div class="rep-photo-label">📷 หลังทำ (After)</div><div class="rep-thumbs">${r.afterPhotos.map(ph=>`<img src="${ph}">`).join('')}</div>` : ''}
+    </div>`;
+    document.getElementById('report-title').textContent = '📄 Report — '+r.name;
+    document.getElementById('report-body').innerHTML = body;
+    currentPrintTitle = 'Repair - '+r.name;
+    currentReportType = 'repair'; currentReportId = repairId;
+    currentPrintHtml = buildOfficialHeader('รายงานงานซ่อมบำรุง', r.name+' · '+r.date) + body + buildOfficialFooter();
+    openModal('modal-report');
+  }
+  function editCurrentReport(){
+    if(currentReportType==='repair'){ closeModal('modal-report'); openEditRepair(currentReportId); }
+    else if(currentReportType==='trip'){ closeModal('modal-report'); openEditTrip(currentReportId); }
+    else if(currentReportType==='point'){ closeModal('modal-report'); openEditPoint(currentReportId); }
+  }
+  function printSection(bodyHtml, title){
+    const win = window.open('', '_blank');
+    win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title>
+      <style>
+        *{box-sizing:border-box;}
+        body{font-family:"Sarabun","Segoe UI",sans-serif;padding:32px;color:#161b26;max-width:800px;margin:0 auto;}
+        .doc-head{display:flex;align-items:center;gap:14px;}
+        .doc-logo{width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#4C8DFF,#7C6FFF);
+          display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;color:#fff;}
+        .doc-org{font-size:11px;letter-spacing:.5px;color:#888;font-weight:700;text-transform:uppercase;}
+        .doc-title{font-size:20px;font-weight:800;margin-top:2px;}
+        .doc-sub{font-size:13px;color:#555;margin-top:2px;}
+        .doc-meta{font-size:11px;color:#999;margin-top:10px;}
+        hr{border:none;border-top:1px solid #ddd;margin:14px 0 18px;}
+        .item{margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #eee;font-size:14px;}
+        /* กรอบรายการ (Report items) จัดระเบียบให้ดูเป็นทางการ */
+        .rep-item{background:#fafbfc;border:1px solid #e3e7ef;border-radius:10px;padding:14px 16px;margin-bottom:12px;
+          page-break-inside:avoid;}
+        .rep-item-head{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px;font-weight:700;}
+        .rep-sub{font-size:11.5px;color:#888;margin-top:3px;}
+        .rep-text{font-size:12.5px;margin-top:6px;line-height:1.7;color:#333;}
+        .rep-text a{color:#3d7fff;word-break:break-all;}
+        .rep-badge{font-size:10.5px;padding:3px 10px;border-radius:20px;font-weight:700;flex-shrink:0;white-space:nowrap;}
+        .rep-badge.rep-ok{background:#e8faf0;color:#22c55e;}
+        .rep-badge.rep-pending{background:#fff5e5;color:#f5a623;}
+        .rep-photo-label{font-size:11.5px;font-weight:700;margin-top:10px;color:#555;}
+        .rep-thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;}
+        .rep-thumbs img,.thumbs img{width:100px;height:100px;object-fit:cover;border-radius:8px;border:1px solid #ddd;
+          display:inline-block;}
+        img{max-width:100px;max-height:100px;object-fit:cover;border-radius:8px;margin:0 6px 6px 0;}
+        .doc-sign{display:flex;justify-content:space-between;margin-top:60px;gap:30px;}
+        .doc-sign-box{flex:1;text-align:center;font-size:12.5px;color:#555;}
+        .doc-sign-line{border-top:1px solid #999;margin-bottom:8px;padding-top:40px;}
+        @media print{
+          body{padding:14px;}
+          .rep-item{break-inside:avoid;}
+        }
+      </style></head><body>${bodyHtml}
+      <script>window.onload=()=>{window.print();}<\/script>
+      </body></html>`);
+    win.document.close();
+  }
+
+
+
+  function renderTable(){
+    const el = document.getElementById('table-body');
+    if(points.length===0){ el.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:20px 0;">ยังไม่มีข้อมูล</td></tr>'; return; }
+    el.innerHTML = points.map(p=>{
+      const st = pointStatus(p);
+      const last = p.logs[0];
+      return `<tr>
+        <td><b>${p.name}</b><br><span style="color:var(--muted);font-size:10.5px;">${p.type}</span></td>
+        <td>${last ? last.date : '-'}</td>
+        <td>${st.next ? fmt(st.next) : '-'}</td>
+        <td><span class="pill" style="background:${st.cls==='overdue'?'var(--amber-bg)':st.cls==='ok'?'var(--green-bg)':'#eee'};
+          color:${st.cls==='overdue'?'var(--amber)':st.cls==='ok'?'var(--green)':'#888'}">${st.label}</span></td>
+      </tr>`;
+    }).join('');
+  }
+
+  function renderMapView(){
+    document.getElementById('s-total').textContent = points.length;
+    document.getElementById('s-overdue').textContent = points.filter(p=>pointStatus(p).cls==='overdue').length;
+    document.getElementById('s-ok').textContent = points.filter(p=>pointStatus(p).cls==='ok').length;
+    const allLogs = [];
+    points.forEach(p=>p.logs.forEach(l=>allLogs.push({...l, pointName:p.name})));
+    allLogs.sort((a,b)=>b.date.localeCompare(a.date));
+    const el = document.getElementById('map-recent');
+    if(allLogs.length===0){ el.innerHTML = '<div class="empty-note">ยังไม่มีบันทึก</div>'; }
+    else{
+      el.innerHTML = allLogs.slice(0,4).map(l=>`
+        <div class="log-item">
+          <div class="lhead"><span>📍 ${l.pointName}</span><span>${l.date}</span></div>
+          <div class="lbody">${l.detail}</div>
+          <div class="lmeta">ผู้ออกหน้างาน: ${l.worker}</div>
+        </div>
+      `).join('');
+    }
+    renderMapTypeFilter();
+    renderMapSearch();
+  }
+
+  let mapTypeFilter = '';
+  function renderMapTypeFilter(){
+    const el = document.getElementById('map-type-filter');
+    const types = [...new Set(points.map(p=>p.type))];
+    const chips = ['', ...types];
+    el.innerHTML = chips.map(t=>`
+      <button class="tab ${mapTypeFilter===t?'active':''}" style="border-radius:20px;"
+        onclick="setMapTypeFilter('${t.replace(/'/g,"\\'")}')">${t===''?'ทั้งหมด':t}</button>
+    `).join('');
+  }
+  function setMapTypeFilter(t){
+    mapTypeFilter = t;
+    renderMapTypeFilter();
+    renderMapSearch();
+  }
+  function renderMapSearch(){
+    const q = (document.getElementById('map-search').value||'').trim().toLowerCase();
+    let list = points;
+    if(mapTypeFilter) list = list.filter(p=>p.type===mapTypeFilter);
+    if(q) list = list.filter(p=>p.name.toLowerCase().includes(q));
+    const el = document.getElementById('map-search-results');
+    if(!q && !mapTypeFilter){ el.innerHTML = ''; return; }
+    if(list.length===0){ el.innerHTML = '<div class="empty-note">ไม่พบจุดที่ค้นหา</div>'; return; }
+    el.innerHTML = list.slice(0,20).map(p=>`
+      <div class="equip-item" style="cursor:pointer;" onclick="goToPointWork(${p.id})">
+        <div><b>📍 ${p.name}</b><div class="sn">${p.type}</div></div>
+        <button class="btn solid small">ไปหน้างาน</button>
+      </div>
+    `).join('');
+  }
+  function goToPointWork(pointId){
+    document.getElementById('ma-filter-trip').value = '';
+    document.getElementById('ma-filter-type').value = '';
+    switchView('ma');
+    setTimeout(()=>{
+      const card = document.getElementById('ma-point-'+pointId);
+      if(card){ card.scrollIntoView({behavior:'smooth', block:'start'}); card.style.borderColor='var(--blue)'; }
+    }, 80);
+  }
+
+  // ---- คลังอุปกรณ์ (สถานที่ + อุปกรณ์ แยกต่างหาก) ----
+  let editingSiteId = null;
+  function openAddSite(){
+    editingSiteId = null;
+    ['s-name','s-lat','s-lng','s-note','s-maplink','s-otherlink'].forEach(id=>document.getElementById(id).value='');
+    const sel = document.getElementById('s-link-point');
+    sel.innerHTML = '<option value="">— ไม่เชื่อมกับจุด MA —</option>' +
+      points.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+    document.getElementById('site-modal-title').textContent = '📍 เพิ่มสถานที่ (ด่าน)';
+    document.getElementById('site-save-btn').textContent = 'บันทึกสถานที่';
+    openModal('modal-site');
+  }
+  function openEditSite(id){
+    const s = sites.find(x=>x.id===id);
+    if(!s) return;
+    editingSiteId = id;
+    document.getElementById('s-name').value = s.name;
+    document.getElementById('s-lat').value = s.lat||'';
+    document.getElementById('s-lng').value = s.lng||'';
+    document.getElementById('s-note').value = s.note||'';
+    document.getElementById('s-maplink').value = s.mapLink||'';
+    document.getElementById('s-otherlink').value = s.otherLink||'';
+    const sel = document.getElementById('s-link-point');
+    sel.innerHTML = '<option value="">— ไม่เชื่อมกับจุด MA —</option>' +
+      points.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+    sel.value = s.linkedPointId || '';
+    document.getElementById('site-modal-title').textContent = '✏️ แก้ไขสถานที่';
+    document.getElementById('site-save-btn').textContent = 'บันทึกการแก้ไข';
+    openModal('modal-site');
+  }
+  function saveSite(){
+    const name = document.getElementById('s-name').value.trim();
+    if(!name){ alert('กรุณากรอกชื่อสถานที่'); return; }
+    const data = {
+      name,
+      lat: document.getElementById('s-lat').value.trim(),
+      lng: document.getElementById('s-lng').value.trim(),
+      note: document.getElementById('s-note').value.trim(),
+      mapLink: document.getElementById('s-maplink').value.trim(),
+      otherLink: document.getElementById('s-otherlink').value.trim(),
+      linkedPointId: document.getElementById('s-link-point').value || null
+    };
+    if(editingSiteId){
+      const idx = sites.findIndex(s=>s.id===editingSiteId);
+      sites[idx] = { ...sites[idx], ...data };
+    } else {
+      sites.push({ id: Date.now(), ...data, devices: [] });
+    }
+    LS.set('hwx_sites', sites);
+    closeModal('modal-site');
+    renderSites();
+  }
+  function deleteSite(id){
+    if(!confirm('ลบสถานที่นี้ทั้งหมด รวมอุปกรณ์ในนั้นด้วย?')) return;
+    sites = sites.filter(s=>s.id!==id);
+    LS.set('hwx_sites', sites);
+    renderSites();
+  }
+  const DEVICE_PRESETS = [
+    'Main Breaker (เมนเบรกเกอร์)',
+    'Phase Protection (อุปกรณ์ป้องกันไฟเฟส)',
+    'MAC Cabinet (ตู้ควบคุมหลัก)',
+    'MAC Light (ไฟส่องตู้ควบคุม)',
+    'Thermostat (เครื่องควบคุมอุณหภูมิ)',
+    'ATS (สวิตช์สลับไฟสำรองอัตโนมัติ)',
+    'Controller A (บอร์ดควบคุม A)',
+    'Controller B (บอร์ดควบคุม B)',
+    'Industrial PC (คอมพิวเตอร์อุตสาหกรรม)',
+    'Monitor (จอภาพ)',
+    'PoE Switch (สวิตช์เครือข่าย PoE)',
+    'WiFi Serial Device Server (ตัวแปลงสัญญาณ WiFi/Serial)',
+    'Router (เราเตอร์)',
+    'Power Supply (แหล่งจ่ายไฟ)',
+    'UPS (แบตเตอรี่สำรองไฟ)',
+    'Push Button (ปุ่มกด)',
+    'Radar A (เรดาร์ตรวจจับ A)',
+    'Radar B (เรดาร์ตรวจจับ B)',
+    'Lamp (โคมไฟ)',
+    'Flash Light (ไฟกระพริบ)'
+  ];
+  function openAddDevice(siteId){
+    activeSiteId = siteId;
+    ['d-name','d-model','d-sn'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('d-status').value = 'ok';
+    document.getElementById('d-preset-list').innerHTML = DEVICE_PRESETS.map(p=>
+      `<button class="btn ghost small" onclick="document.getElementById('d-name').value='${p}'">${p}</button>`
+    ).join('');
+    openModal('modal-device');
+  }
+  function saveDevice(){
+    const name = document.getElementById('d-name').value.trim();
+    if(!name){ alert('กรุณากรอกชื่ออุปกรณ์'); return; }
+    const s = sites.find(x=>x.id===activeSiteId);
+    s.devices.push({
+      id: Date.now(), name,
+      model: document.getElementById('d-model').value.trim(),
+      sn: document.getElementById('d-sn').value.trim(),
+      status: document.getElementById('d-status').value
+    });
+    LS.set('hwx_sites', sites);
+    closeModal('modal-device');
+    renderSites();
+  }
+  function deleteDevice(siteId, deviceId){
+    const s = sites.find(x=>x.id===siteId);
+    s.devices = s.devices.filter(d=>d.id!==deviceId);
+    LS.set('hwx_sites', sites);
+    renderSites();
+  }
+  function renderSites(){
+    const el = document.getElementById('site-list');
+    if(sites.length===0){ el.innerHTML = '<div class="empty-note">ยังไม่มีสถานที่ในคลัง</div>'; return; }
+    el.innerHTML = sites.map(s=>{
+      const linkedPoint = s.linkedPointId ? points.find(p=>p.id===parseInt(s.linkedPointId)) : null;
+      return `
+      <div class="card">
+        <div class="point-head">
+          <div>
+            <div class="point-title">📍 ${s.name}</div>
+            <div class="meta">
+              ${s.lat && s.lng ? `พิกัด: ${s.lat}, ${s.lng}` : 'ยังไม่ระบุพิกัด'}
+              ${linkedPoint ? `<br>🔗 เชื่อมกับงาน MA: ${linkedPoint.name} <a onclick="switchView('ma')" style="color:var(--blue);font-weight:700;cursor:pointer;">(ไปดู)</a>` : ''}
+              ${s.note ? `<br>📝 ${s.note}` : ''}
+            </div>
+          </div>
+          <div class="btnrow">
+            ${s.lat && s.lng ? `<a class="btn ghost small" href="https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}" target="_blank">🧭 นำทาง</a>` : ''}
+            ${s.mapLink ? `<a class="btn ghost small" href="${s.mapLink}" target="_blank">🗺️ ลิงก์แผนที่</a>` : ''}
+            ${s.otherLink ? `<a class="btn ghost small" href="${s.otherLink}" target="_blank">🔗 ลิงก์อื่นๆ</a>` : ''}
+            <button class="btn ghost small" onclick="openEditSite(${s.id})">✏️ แก้ไข</button>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div style="font-size:12.5px;font-weight:700;margin-bottom:6px;">📦 อุปกรณ์ในสถานที่นี้ (${s.devices.length})</div>
+        ${s.devices.length ? s.devices.map(d=>`
+          <div class="equip-item">
+            <div><b>${d.name}</b> <span class="tag ${d.status==='abnormal'?'overdue':'ok'}" style="margin-left:4px;">${d.status==='abnormal'?'❌ ไม่ปกติ':'✅ ปกติ'}</span>
+              <div class="sn">รุ่น: ${d.model||'-'} · S/N: ${d.sn||'-'}</div></div>
+            <button class="btn red small" onclick="deleteDevice(${s.id},${d.id})">ลบ</button>
+          </div>
+        `).join('') : '<div class="empty-note" style="padding:10px 0;">ยังไม่มีอุปกรณ์</div>'}
+        <button class="btn solid small" style="margin-top:8px;" onclick="openAddDevice(${s.id})">+ เพิ่มอุปกรณ์</button>
+        <div class="divider"></div>
+        <button class="btn red small" onclick="deleteSite(${s.id})">ลบสถานที่นี้</button>
+      </div>
+    `;}).join('');
+  }
+
+  function quickLinkSite(pointId){
+    const p = points.find(x=>x.id===pointId);
+    if(sites.length===0){
+      if(confirm('ยังไม่มีสถานที่ในคลังอุปกรณ์ ต้องการสร้างสถานที่ใหม่และเชื่อมกับจุดนี้เลยไหม?')){
+        sites.push({ id: Date.now(), name: p.name, lat: p.lat||'', lng: p.lng||'', note:'', linkedPointId: String(pointId), devices: [] });
+        LS.set('hwx_sites', sites);
+        renderAll();
+      }
+      return;
+    }
+    const names = sites.map((s,i)=>`${i+1}. ${s.name}`).join('\n');
+    const choice = prompt('เลือกสถานที่ที่จะเชื่อมกับจุดนี้ (พิมพ์หมายเลข):\n'+names);
+    const idx = parseInt(choice)-1;
+    if(isNaN(idx) || !sites[idx]) return;
+    // ล้างลิงก์เดิมของจุดนี้ (ถ้ามี) ก่อนเชื่อมใหม่ ป้องกันเชื่อมซ้ำหลายสถานที่
+    sites.forEach(s=>{ if(parseInt(s.linkedPointId)===pointId) s.linkedPointId = null; });
+    sites[idx].linkedPointId = String(pointId);
+    LS.set('hwx_sites', sites);
+    renderAll();
+  }
+  function unlinkSite(pointId){
+    if(!confirm('ยกเลิกการเชื่อมโยงกับคลังอุปกรณ์?')) return;
+    sites.forEach(s=>{ if(parseInt(s.linkedPointId)===pointId) s.linkedPointId = null; });
+    LS.set('hwx_sites', sites);
+    renderAll();
+  }
+
+  // ---- ปฏิทิน (Calendar) ----
+  let calDate = new Date();
+  let activeDay = null;
+  const dows = ['อา','จ','อ','พ','พฤ','ศ','ส'];
+  function dkey(y,m,d){ return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+  function calShift(n){ calDate.setMonth(calDate.getMonth()+n); renderCalendar(); }
+
+  function tripsSpanningDay(key){
+    return trips.filter(t=> t.date && t.endDate && t.endDate!==t.date && key>=t.date && key<=t.endDate);
+  }
+  function renderCalendar(){
+    const y = calDate.getFullYear(), m = calDate.getMonth();
+    document.getElementById('cal-month').textContent =
+      calDate.toLocaleDateString('th-TH', {month:'long', year:'numeric'});
+    const first = new Date(y,m,1).getDay();
+    const days = new Date(y,m+1,0).getDate();
+    const today = new Date();
+    let html = dows.map(d=>`<div class="dow">${d}</div>`).join('');
+    for(let i=0;i<first;i++) html += '<div class="cal-day empty"></div>';
+    for(let d=1; d<=days; d++){
+      const key = dkey(y,m,d);
+      const isToday = today.getFullYear()===y && today.getMonth()===m && today.getDate()===d;
+      const hasNote = (calendarNotes[key] && calendarNotes[key].length>0) || tripsSpanningDay(key).length>0;
+      html += `<div class="cal-day ${isToday?'today':''}" onclick="openDay('${key}')">${d}${hasNote?'<span class="dot"></span>':''}</div>`;
+    }
+    document.getElementById('cal-grid').innerHTML = html;
+    renderCalUpcoming();
+  }
+  function noteText(n){ return typeof n==='object' ? n.text : n; }
+  function liveNoteText(n){
+    // คำนวณสถานะล่าสุดแบบเรียลไทม์ แทนข้อความที่บันทึกไว้ตอนแรก (เผื่อสถานะมีการเปลี่ยนภายหลัง)
+    if(typeof n !== 'object') return n;
+    if(n.type==='repair'){
+      const r = repairs.find(x=>x.id===n.refId);
+      if(r) return `🧰 ซ่อมบำรุง: ${r.name} (${statusLabel[r.status]})`;
+    }
+    if(n.type==='trip'){
+      const t = trips.find(x=>x.id===n.refId);
+      if(t){
+        const pts = (t.pointIds||[]).map(id=>points.find(p=>p.id===id)).filter(Boolean);
+        const completed = t.completed || {};
+        const doneCount = pts.filter(p=>completed[p.id]).length;
+        const pct = pts.length ? Math.round(doneCount/pts.length*100) : 0;
+        return `🚗 แผนเดินทาง "${t.name}" — ${doneCount}/${pts.length} จุด (${pct}%) ${pct===100?'เสร็จสิ้นครบแล้ว':'กำลังดำเนินการ'}`;
+      }
+    }
+    return n.text;
+  }
+  function noteClickAttr(n){
+    if(typeof n!=='object') return '';
+    if(n.type==='repair') return `onclick="closeModal('modal-day');openRepairReport(${n.refId})" style="cursor:pointer;"`;
+    if(n.type==='trip') return `onclick="closeModal('modal-day');openTripReport(${n.refId})" style="cursor:pointer;"`;
+    return '';
+  }
+  function renderCalUpcoming(){
+    const el = document.getElementById('cal-upcoming');
+    const keys = Object.keys(calendarNotes).filter(k=>calendarNotes[k] && calendarNotes[k].length>0).sort();
+    if(keys.length===0){ el.innerHTML = '<div class="empty-note">ยังไม่มีบันทึก</div>'; return; }
+    el.innerHTML = keys.slice(-8).reverse().map(k=>
+      calendarNotes[k].map((n,i)=>`<div class="note-item">
+        <span class="ntext" ${noteClickAttr(n)}><b>${k}</b><br>${liveNoteText(n)}${typeof n==='object'?' <span style="color:var(--blue);">(ดูรายละเอียด ›)</span>':''}</span>
+        <span class="nactions"><button onclick="deleteCalUpcomingNote('${k}',${i})">🗑️</button></span>
+      </div>`).join('')
+    ).join('');
+  }
+  function deleteCalUpcomingNote(key, index){
+    if(!confirm('ลบบันทึกนี้?')) return;
+    calendarNotes[key].splice(index,1);
+    if(calendarNotes[key].length===0) delete calendarNotes[key];
+    LS.set('hwx_calendar', calendarNotes);
+    renderCalendar();
+  }
+  function openDay(key){
+    activeDay = key;
+    document.getElementById('day-modal-title').textContent = '📅 บันทึกวันที่ '+key;
+    document.getElementById('day-new-note').value = '';
+    renderDayNotes();
+    openModal('modal-day');
+  }
+  function renderDayNotes(){
+    const notes = calendarNotes[activeDay] || [];
+    const spanning = tripsSpanningDay(activeDay);
+    const el = document.getElementById('day-notes-list');
+    let html = '';
+    if(spanning.length){
+      html += spanning.map(t=>{
+        const dayNum = Math.round((new Date(activeDay) - new Date(t.date))/86400000) + 1;
+        const totalDays = Math.round((new Date(t.endDate) - new Date(t.date))/86400000) + 1;
+        return `<div class="note-item" style="background:var(--purple-bg);border-left-color:var(--purple);">
+          <span class="ntext" onclick="closeModal('modal-day');openTripReport(${t.id})" style="cursor:pointer;">🚗 แผนเดินทาง "${t.name}" (วันที่ ${dayNum}/${totalDays} ของทริป ${t.date} ถึง ${t.endDate}) <span style="color:var(--purple);">(ดูรายละเอียด ›)</span></span>
+          <span class="nactions"><button onclick="deleteSpanningTrip(${t.id})">🗑️</button></span>
+        </div>`;
+      }).join('');
+    }
+    if(notes.length===0 && spanning.length===0){ el.innerHTML = '<div class="empty-note">ยังไม่มีบันทึกวันนี้</div>'; return; }
+    html += notes.map((n,i)=>`
+      <div class="note-item">
+        <span class="ntext" id="note-text-${i}" ${noteClickAttr(n)}>${liveNoteText(n)}${typeof n==='object'?' <span style="color:var(--blue);">(ดูรายละเอียด ›)</span>':''}</span>
+        <span class="nactions">
+          ${typeof n!=='object' ? `<button onclick="editDayNote(${i})">✏️</button>` : ''}
+          <button onclick="deleteDayNote(${i})">🗑️</button>
+        </span>
+      </div>
+    `).join('');
+    el.innerHTML = html;
+  }
+  function addDayNote(){
+    const val = document.getElementById('day-new-note').value.trim();
+    if(!val) return;
+    if(!calendarNotes[activeDay]) calendarNotes[activeDay] = [];
+    calendarNotes[activeDay].push(val);
+    LS.set('hwx_calendar', calendarNotes);
+    document.getElementById('day-new-note').value = '';
+    renderDayNotes();
+    renderCalendar();
+  }
+  function editDayNote(i){
+    const notes = calendarNotes[activeDay];
+    const newVal = prompt('แก้ไขบันทึก:', noteText(notes[i]));
+    if(newVal===null) return;
+    notes[i] = newVal.trim();
+    LS.set('hwx_calendar', calendarNotes);
+    renderDayNotes();
+    renderCalUpcoming();
+  }
+  function deleteDayNote(i){
+    if(!confirm('ลบบันทึกนี้?')) return;
+    calendarNotes[activeDay].splice(i,1);
+    LS.set('hwx_calendar', calendarNotes);
+    renderDayNotes();
+    renderCalendar();
+  }
+  function deleteSpanningTrip(tripId){
+    if(!confirm('ลบแผนเดินทางนี้ทั้งหมด? (หมุดในปฏิทินทุกวันของทริปนี้จะหายไปด้วย)')) return;
+    trips = trips.filter(t=>t.id!==tripId);
+    LS.set('hwx_trips', trips);
+    renderDayNotes();
+    renderCalendar();
+    renderTrips();
+  }
+
+  // ---- แปลงบันทึกปฏิทินแบบเก่า (ข้อความธรรมดา) ให้เป็นลิงก์กดดูได้ ----
+  function migrateOldCalendarNotes(){
+    let changed = false;
+    Object.keys(calendarNotes).forEach(key=>{
+      calendarNotes[key] = calendarNotes[key].map(n=>{
+        if(typeof n !== 'string') return n; // เป็นลิงก์อยู่แล้ว ข้ามไป
+        const repairMatch = n.match(/^🧰 ซ่อมบำรุง: (.+?) \(/);
+        if(repairMatch){
+          const name = repairMatch[1];
+          const found = repairs.find(r=>r.name===name && r.date===key);
+          if(found){ changed = true; return { text:n, type:'repair', refId: found.id }; }
+        }
+        const tripMatch = n.match(/^🚗 แผนเดินทาง "(.+?)"/);
+        if(tripMatch){
+          const name = tripMatch[1];
+          const found = trips.find(t=>t.name===name);
+          if(found){ changed = true; return { text:n, type:'trip', refId: found.id }; }
+        }
+        return n;
+      });
+    });
+    if(changed) LS.set('hwx_calendar', calendarNotes);
+  }
+  migrateOldCalendarNotes();
+
+  function renderAll(){
+    renderMapView();
+    renderMA();
+    renderTrips();
+    renderTable();
+    renderRepairs();
+    renderSites();
+    renderCalendar();
+    renderUsers();
+  }
+
+  // ---- เช็คว่ามีการล็อกอินไว้แล้วหรือไม่ (ในเซสชันนี้) ----
+  (function initAuth(){
+    const savedName = sessionStorage.getItem('hwx_session');
+    if(savedName){
+      const u = users.find(x=>x.name===savedName);
+      if(u){ showApp(u); return; }
+    }
+    // ยังไม่ได้ล็อกอิน แสดงหน้า auth-screen (ค่าเริ่มต้นอยู่แล้ว)
+  })();
+</script>
+</body>
+</html>
