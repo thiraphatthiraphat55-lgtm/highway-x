@@ -676,10 +676,10 @@
 
   </div><!-- ปิด #app-root -->
 
-<script>
+<script type="text/plain" id="app-src">
   const LS = {
     get(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch(e){ return d; } },
-    set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+    set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} if(window.__pushToCloud){ try{ window.__pushToCloud(k,v); }catch(e){} } }
   };
 
   // ================= ระบบเข้าสู่ระบบ / สมัครสมาชิก =================
@@ -2258,6 +2258,88 @@
     }
     // ยังไม่ได้ล็อกอิน แสดงหน้า auth-screen (ค่าเริ่มต้นอยู่แล้ว)
   })();
+</script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBjQAiwNRGE5TTcaDeILhO7JwJRUzcQt8c",
+  authDomain: "highway-x-639fa.firebaseapp.com",
+  projectId: "highway-x-639fa",
+  storageBucket: "highway-x-639fa.firebasestorage.app",
+  messagingSenderId: "754528675937",
+  appId: "1:754528675937:web:dc5e074efd44de72422220",
+  measurementId: "G-8H7P1MHJPX"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const auth = getAuth(fbApp);
+const db = getFirestore(fbApp);
+const cloudRef = doc(db, "highwayx_data", "main");
+
+const SYNC_KEYS = ["hwx_users","hwx_points","hwx_trips","hwx_repairs","hwx_sites","hwx_calendar","hwx_checklist_items"];
+const HEAVY_FIELDS = ["photos","beforePhotos","afterPhotos","files"];
+
+function stripHeavy(val){
+  if(Array.isArray(val)) return val.map(stripHeavy);
+  if(val && typeof val === "object"){
+    const out = {};
+    for(const k in val){
+      if(HEAVY_FIELDS.indexOf(k) !== -1){ out[k] = []; }
+      else out[k] = stripHeavy(val[k]);
+    }
+    return out;
+  }
+  return val;
+}
+
+let cloudEnabled = false;
+let pushTimer = null;
+const pendingWrites = {};
+
+window.__pushToCloud = function(key, value){
+  if(!cloudEnabled) return;
+  if(SYNC_KEYS.indexOf(key) === -1) return;
+  pendingWrites[key] = stripHeavy(value);
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(flushPush, 700);
+};
+
+async function flushPush(){
+  const data = Object.assign({}, pendingWrites, { _updatedAt: Date.now() });
+  for(const k in pendingWrites) delete pendingWrites[k];
+  try{
+    await setDoc(cloudRef, data, { merge: true });
+  }catch(e){
+    console.error("cloud push failed", e);
+  }
+}
+
+async function boot(){
+  try{
+    await signInAnonymously(auth);
+    const snap = await getDoc(cloudRef);
+    if(snap.exists()){
+      const data = snap.data();
+      SYNC_KEYS.forEach(function(k){
+        if(data[k] !== undefined){
+          localStorage.setItem(k, JSON.stringify(data[k]));
+        }
+      });
+    }
+    cloudEnabled = true;
+  }catch(e){
+    console.error("cloud init failed, running offline (local only)", e);
+  }
+  const srcEl = document.getElementById('app-src');
+  const s = document.createElement('script');
+  s.textContent = srcEl.textContent;
+  document.body.appendChild(s);
+}
+
+boot();
 </script>
 </body>
 </html>
